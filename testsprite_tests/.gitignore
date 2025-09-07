@@ -1,0 +1,6 @@
+# Ignore all test files and temporary files
+*.json
+*.md
+tmp/
+
+# Except these specific files

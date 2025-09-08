@@ -1,0 +1,100 @@
+# Environment variables and secrets
+*/.env
+**/.env.*
+**/secrets.*
+**/config/secrets.*
+**/local.env
+**/development.env
+**/production.env
+backend_api\.env
+backend_api\.env.template
+
+# Plan and sensitive documentation
+plan.json
+*.plan
+planning/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+db.sqlite3
+
+# Logs and temporary files
+*.log
+logs/
+temp/
+tmp/
+*.tmp
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+pip-log.txt
+venv/
+env/
+.venv/
+
+# Django specific
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+media/
+staticfiles/
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build outputs
+dist/
+build/
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Docker
+.dockerignore
+docker-compose.override.yml
+
+# Cloud and deployment
+.aws/
+.gcp/
+terraform.tfstate
+terraform.tfstate.backup
+*.tfvars
+
+# md files
+day1.md
+day2.md
+day3.md
+day4.md
+day5.md
+day6.md
+day7.md
+day8.md
+day9.md
+day10.md

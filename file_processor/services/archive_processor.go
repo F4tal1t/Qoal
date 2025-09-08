@@ -11,6 +11,7 @@ import (
 
 	"github.com/qoal/file-processor/config"
 	"github.com/qoal/file-processor/models"
+	"github.com/qoal/file-processor/utils"
 )
 
 type ArchiveProcessor struct {
@@ -30,7 +31,11 @@ func (p *ArchiveProcessor) ProcessArchive(job *models.ProcessingJob) error {
 	job.Progress = 10
 
 	// Download input file
-	inputFile := filepath.Join(p.config.TempDir, job.JobID+"_input"+getArchiveExtension(job.SourceFormat))
+	ext, err := utils.GetArchiveExtension(job.SourceFormat)
+	if err != nil {
+		return fmt.Errorf("failed to get archive extension: %w", err)
+	}
+	inputFile := filepath.Join(p.config.TempDir, job.JobID+"_input"+ext)
 	if err := p.s3Service.DownloadFile(job.InputPath, inputFile); err != nil {
 		return fmt.Errorf("failed to download archive: %w", err)
 	}
@@ -77,11 +82,11 @@ func (p *ArchiveProcessor) executeArchiveConversion(inputFile string, job *model
 	case "ZIP_TO_7Z":
 		return p.convertZipTo7Z(inputFile, outputFile, job)
 	case "7Z_TO_ZIP":
-		return "", fmt.Errorf("7Z to ZIP conversion not implemented")
+		return p.convert7ZtoZip(inputFile, outputFile, job)
 	case "RAR_TO_ZIP":
-		return "", fmt.Errorf("RAR to ZIP conversion not implemented")
+		return p.convertRarToZip(inputFile, outputFile, job)
 	case "TAR_GZ_TO_ZIP":
-		return "", fmt.Errorf("TAR.GZ to ZIP conversion not implemented")
+		return p.convertTarGzToZip(inputFile, outputFile, job)
 	default:
 		return "", fmt.Errorf("unsupported archive conversion: %s", conversionType)
 	}
@@ -148,6 +153,10 @@ func (p *ArchiveProcessor) extractZip(src, dest string) error {
 	}
 
 	return nil
+}
+
+func (p *ArchiveProcessor) GetCompressionLevel(settings map[string]interface{}) int {
+	return p.getCompressionLevel(settings)
 }
 
 func (p *ArchiveProcessor) getCompressionLevel(settings map[string]interface{}) int {

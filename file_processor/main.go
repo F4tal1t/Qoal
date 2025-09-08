@@ -9,6 +9,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/qoal/file-processor/config"
 	"github.com/qoal/file-processor/handlers"
 	"github.com/qoal/file-processor/services"
 	"github.com/qoal/file-processor/worker"
@@ -22,9 +23,12 @@ import (
 )
 
 func main() {
+	// Load configuration
+	_ = config.Load() // Configuration loaded but not used in this test context
+
 	// Initialize services
 	rdb := redis.NewClient(&redis.Options{
-		Addr:     os.Getenv("REDIS_ADDR"),
+		Addr:     "localhost:6379",
 		Password: "", // no password set
 		DB:       0,  // use default DB
 	})
@@ -61,6 +65,7 @@ func main() {
 	worker.Start(context.Background())
 
 	// Setup routes
+	handlers.SetJobService(jobService)
 	r.POST("/process", handlers.CreateJobHandler)
 	r.GET("/status/:id", handlers.GetJobStatusHandler)
 

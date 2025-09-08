@@ -11,6 +11,7 @@ const (
 
 type Job struct {
 	ID          string    `json:"id"`
+	UserID      string    `json:"user_id"`
 	InputFile   string    `json:"input_file"`
 	OutputFile  string    `json:"output_file,omitempty"`
 	Status      JobStatus `json:"status"`

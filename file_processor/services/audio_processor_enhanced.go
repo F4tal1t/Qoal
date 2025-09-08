@@ -9,6 +9,7 @@ import (
 
 	"github.com/qoal/file-processor/config"
 	"github.com/qoal/file-processor/models"
+	"github.com/qoal/file-processor/utils"
 )
 
 type EnhancedAudioProcessor struct {
@@ -137,6 +138,10 @@ type AudioQuality struct {
 	Bitrate     string
 	SampleRate  int
 	Description string
+}
+
+func (p *EnhancedAudioProcessor) GetAudioQualityPreset(settings map[string]interface{}) AudioQuality {
+	return p.getAudioQualityPreset(settings)
 }
 
 func (p *EnhancedAudioProcessor) getAudioQualityPreset(settings map[string]interface{}) AudioQuality {

@@ -49,6 +49,20 @@ func GetStringSetting(settings map[string]interface{}, key, defaultValue string)
 	return defaultValue, nil
 }
 
+func GetIntSetting(settings map[string]interface{}, key string, defaultValue int) (int, error) {
+	if val, exists := settings[key]; exists {
+		switch v := val.(type) {
+		case int:
+			return v, nil
+		case float64:
+			return int(v), nil
+		default:
+			return 0, fmt.Errorf("invalid type for setting %s", key)
+		}
+	}
+	return defaultValue, nil
+}
+
 func GetImageExtension(format string) (string, error) {
 	switch strings.ToLower(format) {
 	case "jpeg":

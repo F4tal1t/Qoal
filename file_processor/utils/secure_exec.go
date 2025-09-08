@@ -23,7 +23,7 @@ func (e *SecureCommandExecutor) ExecuteCommand(name string, args []string) error
 	}
 
 	// Sanitize arguments
-	sanitizedArgs := e.sanitizeArgs(args)
+	sanitizedArgs := e.SanitizeArgs(args)
 
 	// Create context with timeout
 	ctx, cancel := context.WithTimeout(context.Background(), e.timeout)
@@ -57,7 +57,7 @@ func (e *SecureCommandExecutor) isAllowedCommand(name string) bool {
 	return allowedCommands[baseName]
 }
 
-func (e *SecureCommandExecutor) sanitizeArgs(args []string) []string {
+func (e *SecureCommandExecutor) SanitizeArgs(args []string) []string {
 	sanitized := make([]string, len(args))
 
 	for i, arg := range args {

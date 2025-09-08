@@ -66,27 +66,33 @@ func (p *EnhancedImageProcessor) ProcessImage(job *models.ProcessingJob) error {
 }
 
 func (p *EnhancedImageProcessor) executeImageConversion(inputFile string, job *models.ProcessingJob) (string, error) {
+	ext, err := utils.GetImageExtension(job.TargetFormat)
+	if err != nil {
+		return "", fmt.Errorf("failed to get target extension: %w", err)
+	}
+	outputFile := filepath.Join(p.config.OutputDir, job.JobID+"_output"+ext)
+
 	conversionType := strings.ToUpper(job.SourceFormat) + "_TO_" + strings.ToUpper(job.TargetFormat)
 	switch conversionType {
 	case "JPEG_TO_PNG":
-		return "", fmt.Errorf("JPEG to PNG conversion not implemented")
+		return p.convertJPEGtoPNG(inputFile, outputFile, job)
 	case "PNG_TO_JPEG":
-		return "", fmt.Errorf("PNG to JPEG conversion not implemented")
+		return p.convertPNGtoJPEG(inputFile, outputFile, job)
 	case "PNG_TO_WEBP":
-		return "", fmt.Errorf("PNG to WebP conversion not implemented")
+		return p.convertPNGtoWebP(inputFile, outputFile, job)
 	case "JPEG_TO_WEBP":
-		return "", fmt.Errorf("JPEG to WebP conversion not implemented")
+		return p.convertJPEGtoWebP(inputFile, outputFile, job)
 	case "WEBP_TO_JPEG":
-		return "", fmt.Errorf("WebP to JPEG conversion not implemented")
+		return p.convertWebPtoJPEG(inputFile, outputFile, job)
 	case "WEBP_TO_PNG":
-		return "", fmt.Errorf("WebP to PNG conversion not implemented")
+		return p.convertWebPtoPNG(inputFile, outputFile, job)
 	case "HEIC_TO_JPEG":
-		return "", fmt.Errorf("HEIC to JPEG conversion not implemented")
+		return p.convertHEICtoJPEG(inputFile, outputFile, job)
 	case "BMP_TO_JPEG":
-		return "", fmt.Errorf("BMP to JPEG conversion not implemented")
+		return p.convertBMPtoJPEG(inputFile, outputFile, job)
 	case "TIFF_TO_PNG":
-		return "", fmt.Errorf("TIFF to PNG conversion not implemented")
+		return p.convertTIFFtoPNG(inputFile, outputFile, job)
 	default:
-		return "", fmt.Errorf("unsupported image conversion: %s", conversionType)
+		return p.genericImageConversion(inputFile, outputFile, job)
 	}
 }

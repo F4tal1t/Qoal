@@ -1,0 +1,130 @@
+@font-face {
+  font-family: 'dotemp-demo';
+  src: url('./fonts/dotemp-demo.ttf') format('truetype');
+}
+
+.auth-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  font-family: 'dotemp-demo', monospace;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.auth-container {
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+}
+
+.back-btn {
+  position: absolute;
+  top: -60px;
+  left: 0;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-family: 'dotemp-demo', monospace;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.back-btn:hover {
+  background: rgba(0, 0, 0, 1);
+}
+
+.auth-form-container {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 16px;
+  padding: 40px;
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(212, 175, 55, 0.3);
+}
+
+.auth-toggle {
+  display: flex;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  padding: 4px;
+  margin-bottom: 30px;
+}
+
+.auth-toggle button {
+  flex: 1;
+  background: transparent;
+  border: none;
+  padding: 12px;
+  border-radius: 6px;
+  font-family: 'dotemp-demo', monospace;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: #666;
+}
+
+.auth-toggle button.active {
+  background: #D4AF37;
+  color: white;
+}
+
+.auth-form h2 {
+  text-align: center;
+  margin-bottom: 24px;
+  color: #333;
+  font-size: 1.8rem;
+}
+
+.auth-form input {
+  width: 100%;
+  padding: 14px 16px;
+  margin-bottom: 16px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  font-family: 'dotemp-demo', monospace;
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
+}
+
+.auth-form input:focus {
+  outline: none;
+  border-color: #D4AF37;
+}
+
+.submit-btn {
+  width: 100%;
+  background: #D4AF37;
+  color: white;
+  border: none;
+  padding: 16px;
+  border-radius: 8px;
+  font-family: 'dotemp-demo', monospace;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.submit-btn:hover:not(:disabled) {
+  background: #B8941F;
+  transform: translateY(-2px);
+}
+
+.submit-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.error-message {
+  background: rgba(239, 68, 68, 0.1);
+  color: #dc2626;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  text-align: center;
+  font-size: 0.9rem;
+}

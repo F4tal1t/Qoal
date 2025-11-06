@@ -12,13 +12,17 @@ import (
 	"github.com/google/uuid"
 )
 
-var jobService *services.JobService
-
-func SetJobService(js *services.JobService) {
-	jobService = js
+type JobHandler struct {
+	jobService *services.JobService
 }
 
-func CreateJobHandler(c *gin.Context) {
+func NewJobHandler(jobService *services.JobService) *JobHandler {
+	return &JobHandler{
+		jobService: jobService,
+	}
+}
+
+func (h *JobHandler) CreateJobHandler(c *gin.Context) {
 	jobID := uuid.New().String()
 
 	job := models.Job{
@@ -31,7 +35,7 @@ func CreateJobHandler(c *gin.Context) {
 
 	// Add job to processing queue
 	ctx := context.Background()
-	if err := jobService.CreateJob(ctx, &job); err != nil {
+	if err := h.jobService.CreateJob(ctx, &job); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": "Failed to create job",
 		})
@@ -44,11 +48,11 @@ func CreateJobHandler(c *gin.Context) {
 	})
 }
 
-func GetJobStatusHandler(c *gin.Context) {
+func (h *JobHandler) GetJobStatusHandler(c *gin.Context) {
 	jobID := c.Param("id")
 
 	ctx := context.Background()
-	job, err := jobService.GetJobStatus(ctx, jobID)
+	job, err := h.jobService.GetJobStatus(ctx, jobID)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{
 			"error": "Job not found",

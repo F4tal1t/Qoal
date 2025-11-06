@@ -7,6 +7,9 @@ type Config struct {
 	FFmpegPath      string
 	TempDir         string
 	OutputDir       string
+	DatabaseURL     string
+	JWTSecret       string
+	RedisURL        string
 }
 
 func Load() *Config {
@@ -15,5 +18,8 @@ func Load() *Config {
 		FFmpegPath:      os.Getenv("FFMPEG_PATH"),
 		TempDir:         os.Getenv("TEMP_DIR"),
 		OutputDir:       os.Getenv("OUTPUT_DIR"),
+		DatabaseURL:     os.Getenv("DATABASE_URL"),
+		JWTSecret:       os.Getenv("JWT_SECRET"),
+		RedisURL:        os.Getenv("REDIS_URL"),
 	}
 }

@@ -83,3 +83,43 @@ func GetImageExtension(format string) (string, error) {
 		return "", fmt.Errorf("unsupported image format: %s", format)
 	}
 }
+
+func GetDocumentExtension(format string) (string, error) {
+	switch strings.ToLower(format) {
+	case "pdf":
+		return ".pdf", nil
+	case "docx":
+		return ".docx", nil
+	case "doc":
+		return ".doc", nil
+	case "txt":
+		return ".txt", nil
+	case "rtf":
+		return ".rtf", nil
+	case "odt":
+		return ".odt", nil
+	default:
+		return "", fmt.Errorf("unsupported document format: %s", format)
+	}
+}
+
+func GetVideoExtension(format string) (string, error) {
+	switch strings.ToLower(format) {
+	case "mp4":
+		return ".mp4", nil
+	case "avi":
+		return ".avi", nil
+	case "mov":
+		return ".mov", nil
+	case "mkv":
+		return ".mkv", nil
+	case "webm":
+		return ".webm", nil
+	case "flv":
+		return ".flv", nil
+	case "wmv":
+		return ".wmv", nil
+	default:
+		return "", fmt.Errorf("unsupported video format: %s", format)
+	}
+}

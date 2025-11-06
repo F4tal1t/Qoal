@@ -8,6 +8,7 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
+	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 
@@ -15,11 +16,17 @@ import (
 	"github.com/qoal/file-processor/handlers"
 	"github.com/qoal/file-processor/middleware"
 	"github.com/qoal/file-processor/services"
+	"github.com/qoal/file-processor/storage"
 	"github.com/qoal/file-processor/utils"
 	"github.com/qoal/file-processor/worker"
 )
 
 func main() {
+	// Load .env file
+	if err := godotenv.Load(); err != nil {
+		log.Println("Warning: .env file not found, using system environment variables")
+	}
+
 	// Load configuration
 	cfg := config.Load()
 
@@ -55,9 +62,13 @@ func main() {
 
 	// Initialize services
 	authService := services.NewAuthService(db)
+
+	// Initialize storage
+	localStorage := storage.NewLocalStorage("uploads", "processed")
+
 	var jobService *services.JobService
 	if redisClient != nil {
-		jobService = services.NewJobService(redisClient)
+		jobService = services.NewJobService(db, redisClient)
 	}
 
 	// Initialize handlers
@@ -66,14 +77,22 @@ func main() {
 	if jobService != nil {
 		jobHandler = handlers.NewJobHandler(jobService)
 	}
-	uploadHandler := handlers.NewUploadHandler()
+
+	// Initialize upload handler with job service (only if Redis is available)
+	var uploadHandler *handlers.UploadHandler
+	if jobService != nil {
+		uploadHandler = handlers.NewUploadHandler(db, localStorage, jobService)
+	} else {
+		// Create a basic upload handler without job processing capabilities
+		uploadHandler = handlers.NewUploadHandler(db, localStorage, nil)
+	}
 
 	// Initialize Gin router
 	router := gin.Default()
 
 	// Configure CORS
 	router.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:3000", "http://localhost:8080"},
+		AllowOrigins:     []string{"http://localhost:3000", "http://localhost:8000"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
@@ -81,14 +100,14 @@ func main() {
 	}))
 
 	// Public routes
-	public := router.Group("/api/v1")
+	public := router.Group("/api")
 	{
 		public.POST("/auth/register", authHandler.Register)
 		public.POST("/auth/login", authHandler.Login)
 	}
 
 	// Protected routes
-	protected := router.Group("/api/v1")
+	protected := router.Group("/api")
 	protected.Use(middleware.JWTAuth(authService))
 	{
 		protected.GET("/auth/profile", authHandler.GetProfile)
@@ -96,15 +115,16 @@ func main() {
 			protected.POST("/process", jobHandler.CreateJobHandler)
 			protected.GET("/status/:id", jobHandler.GetJobStatusHandler)
 		}
-		protected.POST("/upload", uploadHandler.HandleUpload)
-		protected.GET("/uploads", uploadHandler.HandleListUploads)
-		protected.DELETE("/uploads/:filename", uploadHandler.HandleDeleteUpload)
+		protected.POST("/upload", uploadHandler.UploadFile)
+		protected.GET("/jobs", uploadHandler.GetUserJobs)
+		protected.GET("/jobs/:id", uploadHandler.GetJobStatus)
+		protected.GET("/download/:id", uploadHandler.DownloadFile)
 	}
 
 	// Start worker in background (only if Redis is available)
 	if jobService != nil {
 		go func() {
-			processor := worker.NewProcessor(jobService, cfg, redisClient)
+			processor := worker.NewProcessor(jobService, cfg, redisClient, localStorage)
 			processor.Start(ctx)
 		}()
 	}

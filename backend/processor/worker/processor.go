@@ -2,29 +2,42 @@ package worker
 
 import (
 	"context"
+	"fmt"
 	"log"
-	"path/filepath"
 	"strings"
 	"time"
 
 	"github.com/qoal/file-processor/config"
 	"github.com/qoal/file-processor/models"
 	"github.com/qoal/file-processor/services"
+	"github.com/qoal/file-processor/storage"
 
 	"github.com/go-redis/redis/v8"
 )
 
 type Processor struct {
-	redisClient *redis.Client
-	jobService  *services.JobService
-	config      *config.Config
+	redisClient       *redis.Client
+	jobService        *services.JobService
+	config            *config.Config
+	localStorage      *storage.LocalStorage
+	documentProcessor *services.EnhancedDocumentProcessor
+	imageProcessor    *services.EnhancedImageProcessor
+	videoProcessor    *services.EnhancedVideoProcessor
+	audioProcessor    *services.EnhancedAudioProcessor
+	archiveProcessor  *services.ArchiveProcessor
 }
 
-func NewProcessor(jobService *services.JobService, cfg *config.Config, redisClient *redis.Client) *Processor {
+func NewProcessor(jobService *services.JobService, cfg *config.Config, redisClient *redis.Client, localStorage *storage.LocalStorage) *Processor {
 	return &Processor{
-		redisClient: redisClient,
-		jobService:  jobService,
-		config:      cfg,
+		redisClient:       redisClient,
+		jobService:        jobService,
+		config:            cfg,
+		localStorage:      localStorage,
+		documentProcessor: services.NewEnhancedDocumentProcessor(cfg, localStorage),
+		imageProcessor:    services.NewEnhancedImageProcessor(cfg, localStorage),
+		videoProcessor:    services.NewEnhancedVideoProcessor(cfg, localStorage),
+		audioProcessor:    services.NewEnhancedAudioProcessor(cfg, localStorage),
+		archiveProcessor:  services.NewArchiveProcessor(cfg, localStorage),
 	}
 }
 
@@ -38,63 +51,125 @@ func (p *Processor) Start(ctx context.Context) {
 				log.Println("Worker shutting down...")
 				return
 			default:
-				// Check for jobs in Redis queue
-				jobID, err := p.redisClient.BRPop(ctx, 5*time.Second, "processing_queue").Result()
+				// Get next job from queue
+				task, err := p.jobService.GetNextJobFromQueue(ctx)
 				if err != nil {
 					if err != redis.Nil {
-						log.Printf("Error checking queue: %v", err)
+						log.Printf("Error getting job from queue: %v", err)
 					}
+					// Wait a bit before trying again
+					time.Sleep(1 * time.Second)
 					continue
 				}
 
-				if len(jobID) > 1 {
-					log.Printf("Processing job: %s", jobID[1])
-					if err := p.ProcessJob(ctx, jobID[1]); err != nil {
-						log.Printf("Job processing failed: %v", err)
-					}
+				log.Printf("Processing job: %s", task.JobID)
+				if err := p.ProcessJob(ctx, task); err != nil {
+					log.Printf("Job processing failed: %v", err)
 				}
 			}
 		}
 	}()
 }
 
-func (p *Processor) ProcessJob(ctx context.Context, jobID string) error {
-	job, err := p.jobService.GetJobStatus(ctx, jobID)
-	if err != nil {
-		return err
-	}
-
+func (p *Processor) ProcessJob(ctx context.Context, task *services.JobTask) error {
 	// Update job status to processing
-	_, err = p.jobService.UpdateJobStatus(ctx, job.ID, models.StatusProcessing, "")
-	if err != nil {
-		return err
+	if err := p.jobService.UpdateJobStatus(ctx, task.JobID, models.StatusProcessing, "", ""); err != nil {
+		return fmt.Errorf("failed to update job status to processing: %w", err)
 	}
 
 	// Create processing job model
 	processingJob := &models.ProcessingJob{
-		JobID:        job.ID,
-		InputPath:    job.InputFile,
-		SourceFormat: strings.TrimPrefix(filepath.Ext(job.InputFile), "."),
+		JobID:        task.JobID,
+		UserID:       task.UserID,
+		InputPath:    task.InputPath,
+		OutputPath:   task.OutputPath,
+		SourceFormat: task.SourceFormat,
+		TargetFormat: task.TargetFormat,
 		Status:       models.StatusProcessing,
+		Settings:     task.Settings,
 	}
 
-	// For now, just simulate processing and mark as completed
-	// TODO: Implement actual file processing based on file type
-	log.Printf("Simulating processing for file: %s", job.InputFile)
+	log.Printf("Processing file: %s (format: %s -> %s)", task.InputPath, task.SourceFormat, task.TargetFormat)
 
-	// Simulate processing time
-	time.Sleep(2 * time.Second)
+	// Determine file category and process accordingly
+	var err error
+	fileCategory := p.getFileCategory(task.SourceFormat)
 
-	// Mark as completed
-	processingJob.Status = models.StatusCompleted
-	processingJob.OutputPath = job.InputFile + ".processed" // Placeholder
+	switch fileCategory {
+	case "document":
+		err = p.documentProcessor.ProcessDocument(processingJob)
+	case "image":
+		err = p.imageProcessor.ProcessImage(processingJob)
+	case "video":
+		err = p.videoProcessor.ProcessVideo(processingJob)
+	case "audio":
+		err = p.audioProcessor.ProcessAudio(processingJob)
+	case "archive":
+		err = p.archiveProcessor.ProcessArchive(processingJob)
+	default:
+		err = fmt.Errorf("unsupported file category: %s", fileCategory)
+	}
 
-	// Update job status
-	_, err = p.jobService.UpdateJobStatus(ctx, job.ID, processingJob.Status, processingJob.OutputPath)
 	if err != nil {
-		return err
+		// Update job status to failed
+		if updateErr := p.jobService.UpdateJobStatus(ctx, task.JobID, models.StatusFailed, "", err.Error()); updateErr != nil {
+			log.Printf("Failed to update job status to failed: %v", updateErr)
+		}
+		return fmt.Errorf("job processing failed: %w", err)
 	}
 
-	log.Printf("Job %s completed successfully", jobID)
+	// Update job status to completed
+	if err := p.jobService.UpdateJobStatus(ctx, task.JobID, models.StatusCompleted, processingJob.OutputPath, ""); err != nil {
+		return fmt.Errorf("failed to update job status to completed: %w", err)
+	}
+
+	log.Printf("Job %s completed successfully", task.JobID)
 	return nil
+}
+
+// getFileCategory determines the file category based on format
+func (p *Processor) getFileCategory(format string) string {
+	format = strings.ToLower(format)
+
+	// Document formats
+	documentFormats := []string{"pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx", "txt", "rtf", "csv"}
+	for _, f := range documentFormats {
+		if format == f {
+			return "document"
+		}
+	}
+
+	// Image formats
+	imageFormats := []string{"jpg", "jpeg", "png", "gif", "bmp", "webp", "tiff", "svg"}
+	for _, f := range imageFormats {
+		if format == f {
+			return "image"
+		}
+	}
+
+	// Video formats
+	videoFormats := []string{"mp4", "avi", "mov", "wmv", "flv", "mkv", "webm", "m4v"}
+	for _, f := range videoFormats {
+		if format == f {
+			return "video"
+		}
+	}
+
+	// Audio formats
+	audioFormats := []string{"mp3", "wav", "flac", "aac", "ogg", "m4a", "wma"}
+	for _, f := range audioFormats {
+		if format == f {
+			return "audio"
+		}
+	}
+
+	// Archive formats
+	archiveFormats := []string{"zip", "rar", "7z", "tar", "gz", "bz2", "xz"}
+	for _, f := range archiveFormats {
+		if format == f {
+			return "archive"
+		}
+	}
+
+	return "unknown"
 }

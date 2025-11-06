@@ -11,18 +11,19 @@ import (
 
 	"github.com/qoal/file-processor/config"
 	"github.com/qoal/file-processor/models"
+	"github.com/qoal/file-processor/storage"
 	"github.com/qoal/file-processor/utils"
 )
 
 type ArchiveProcessor struct {
-	config    *config.Config
-	s3Service *S3Service
+	config       *config.Config
+	localStorage *storage.LocalStorage
 }
 
-func NewArchiveProcessor(cfg *config.Config, s3 *S3Service) *ArchiveProcessor {
+func NewArchiveProcessor(cfg *config.Config, storage *storage.LocalStorage) *ArchiveProcessor {
 	return &ArchiveProcessor{
-		config:    cfg,
-		s3Service: s3,
+		config:       cfg,
+		localStorage: storage,
 	}
 }
 
@@ -36,8 +37,21 @@ func (p *ArchiveProcessor) ProcessArchive(job *models.ProcessingJob) error {
 		return fmt.Errorf("failed to get archive extension: %w", err)
 	}
 	inputFile := filepath.Join(p.config.TempDir, job.JobID+"_input"+ext)
-	if err := p.s3Service.DownloadFile(job.InputPath, inputFile); err != nil {
-		return fmt.Errorf("failed to download archive: %w", err)
+	inputFileObj, err := p.localStorage.GetFile(job.InputPath)
+	if err != nil {
+		return fmt.Errorf("failed to get archive: %w", err)
+	}
+	defer inputFileObj.Close()
+
+	// Copy file to temp location
+	out, err := os.Create(inputFile)
+	if err != nil {
+		return fmt.Errorf("failed to create temp file: %w", err)
+	}
+	defer out.Close()
+
+	if _, err := io.Copy(out, inputFileObj); err != nil {
+		return fmt.Errorf("failed to copy archive: %w", err)
 	}
 
 	job.Progress = 30
@@ -50,11 +64,25 @@ func (p *ArchiveProcessor) ProcessArchive(job *models.ProcessingJob) error {
 
 	job.Progress = 80
 
-	// Upload result
-	outputKey := fmt.Sprintf("outputs/%d/%s/converted_%s", job.UserID, job.JobID,
+	// Save result to storage
+	outputKey := fmt.Sprintf("outputs/%s/%s/converted_%s", job.UserID, job.JobID,
 		filepath.Base(outputFile))
-	if err := p.s3Service.UploadFile(outputFile, outputKey); err != nil {
-		return fmt.Errorf("failed to upload archive result: %w", err)
+
+	// Open output file for reading
+	outFile, err := os.Open(outputFile)
+	if err != nil {
+		return fmt.Errorf("failed to open output file: %w", err)
+	}
+	defer outFile.Close()
+
+	// Get file info for size
+	fileInfo, err := outFile.Stat()
+	if err != nil {
+		return fmt.Errorf("failed to get file info: %w", err)
+	}
+
+	if _, err := p.localStorage.SaveFile(outFile, outputKey, fileInfo.Size()); err != nil {
+		return fmt.Errorf("failed to save archive result: %w", err)
 	}
 
 	job.OutputPath = outputKey

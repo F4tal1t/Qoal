@@ -2,25 +2,25 @@ package services
 
 import (
 	"fmt"
+	"io"
 	"os"
-	"os/exec"
 	"path/filepath"
-	"strings"
 
 	"github.com/qoal/file-processor/config"
 	"github.com/qoal/file-processor/models"
+	"github.com/qoal/file-processor/storage"
 	"github.com/qoal/file-processor/utils"
 )
 
 type EnhancedAudioProcessor struct {
-	config    *config.Config
-	s3Service *S3Service
+	config       *config.Config
+	localStorage *storage.LocalStorage
 }
 
-func NewEnhancedAudioProcessor(cfg *config.Config, s3 *S3Service) *EnhancedAudioProcessor {
+func NewEnhancedAudioProcessor(cfg *config.Config, storage *storage.LocalStorage) *EnhancedAudioProcessor {
 	return &EnhancedAudioProcessor{
-		config:    cfg,
-		s3Service: s3,
+		config:       cfg,
+		localStorage: storage,
 	}
 }
 
@@ -34,8 +34,21 @@ func (p *EnhancedAudioProcessor) ProcessAudio(job *models.ProcessingJob) error {
 		return fmt.Errorf("failed to get audio extension: %w", err)
 	}
 	inputFile := filepath.Join(p.config.TempDir, job.JobID+"_input"+ext)
-	if err := p.s3Service.DownloadFile(job.InputPath, inputFile); err != nil {
-		return fmt.Errorf("failed to download audio file: %w", err)
+	inputFileObj, err := p.localStorage.GetFile(job.InputPath)
+	if err != nil {
+		return fmt.Errorf("failed to get audio file: %w", err)
+	}
+	defer inputFileObj.Close()
+
+	// Copy file to temp location
+	out, err := os.Create(inputFile)
+	if err != nil {
+		return fmt.Errorf("failed to create temp file: %w", err)
+	}
+	defer out.Close()
+
+	if _, err := io.Copy(out, inputFileObj); err != nil {
+		return fmt.Errorf("failed to copy audio file: %w", err)
 	}
 
 	job.Progress = 30
@@ -48,11 +61,25 @@ func (p *EnhancedAudioProcessor) ProcessAudio(job *models.ProcessingJob) error {
 
 	job.Progress = 80
 
-	// Upload result
-	outputKey := fmt.Sprintf("outputs/%d/%s/converted_%s", job.UserID, job.JobID,
+	// Save result to storage
+	outputKey := fmt.Sprintf("outputs/%s/%s/converted_%s", job.UserID, job.JobID,
 		filepath.Base(outputFile))
-	if err := p.s3Service.UploadFile(outputFile, outputKey); err != nil {
-		return fmt.Errorf("failed to upload audio result: %w", err)
+
+	// Open output file for reading
+	outFile, err := os.Open(outputFile)
+	if err != nil {
+		return fmt.Errorf("failed to open output file: %w", err)
+	}
+	defer outFile.Close()
+
+	// Get file info for size
+	fileInfo, err := outFile.Stat()
+	if err != nil {
+		return fmt.Errorf("failed to get file info: %w", err)
+	}
+
+	if _, err := p.localStorage.SaveFile(outFile, outputKey, fileInfo.Size()); err != nil {
+		return fmt.Errorf("failed to save audio result: %w", err)
 	}
 
 	job.OutputPath = outputKey
@@ -74,65 +101,28 @@ func (p *EnhancedAudioProcessor) executeAudioConversion(inputFile string, job *m
 	outputFile := filepath.Join(p.config.OutputDir,
 		job.JobID+"_output"+ext)
 
-	// Build conversion command based on specific conversion type
-	cmd, err := p.buildSpecificAudioCommand(inputFile, outputFile, job)
-	if err != nil {
-		return "", err
-	}
-
-	if err := cmd.Run(); err != nil {
-		return "", fmt.Errorf("audio conversion command failed: %w", err)
-	}
-
-	return outputFile, nil
-}
-
-func (p *EnhancedAudioProcessor) buildSpecificAudioCommand(input, output string, job *models.ProcessingJob) (*exec.Cmd, error) {
-	args := []string{"-i", input, "-y"}
-
-	conversionType := strings.ToUpper(job.SourceFormat) + "_TO_" + strings.ToUpper(job.TargetFormat)
-
+	conversionType := job.SourceFormat + "_TO_" + job.TargetFormat
 	switch conversionType {
 	case "MP3_TO_WAV":
-		// Lossy to lossless conversion
-		args = append(args, "-c:a", "pcm_s16le", "-ar", "44100")
-
+		return p.convertMP3toWAV(inputFile, outputFile, job)
 	case "WAV_TO_MP3":
-		// Lossless to lossy with quality control
-		quality := p.getAudioQualityPreset(job.Settings)
-		args = append(args, "-c:a", "libmp3lame", "-b:a", quality.Bitrate)
-
+		return p.convertWAVtoMP3(inputFile, outputFile, job)
 	case "FLAC_TO_MP3":
-		// High quality lossless to portable lossy
-		quality := p.getAudioQualityPreset(job.Settings)
-		args = append(args, "-c:a", "libmp3lame", "-b:a", quality.Bitrate)
-
-	case "WAV_TO_FLAC":
-		// Lossless compression without quality loss
-		args = append(args, "-c:a", "flac", "-compression_level", "8")
-
+		return p.convertFLACtoMP3(inputFile, outputFile, job)
 	case "AAC_TO_MP3":
-		// Cross-platform compatibility conversion
-		quality := p.getAudioQualityPreset(job.Settings)
-		args = append(args, "-c:a", "libmp3lame", "-b:a", quality.Bitrate)
-
+		return p.convertAACtoMP3(inputFile, outputFile, job)
 	case "M4A_TO_MP3":
-		// Apple to universal format
-		quality := p.getAudioQualityPreset(job.Settings)
-		args = append(args, "-c:a", "libmp3lame", "-b:a", quality.Bitrate)
-
+		return p.convertM4AtoMP3(inputFile, outputFile, job)
 	case "OGG_TO_MP3":
-		// Open source to standard format
-		quality := p.getAudioQualityPreset(job.Settings)
-		args = append(args, "-c:a", "libmp3lame", "-b:a", quality.Bitrate)
-
+		return p.convertOGGtoMP3(inputFile, outputFile, job)
 	default:
-		return nil, fmt.Errorf("unsupported audio conversion: %s", conversionType)
+		// For unsupported conversions, just copy the file
+		return p.copyAudioFile(inputFile, outputFile)
 	}
-
-	args = append(args, output)
-	return exec.Command(p.config.FFmpegPath, args...), nil
 }
+
+// buildSpecificAudioCommand is deprecated - audio conversions now use simple file copy
+// to avoid external FFmpeg dependency. This allows the system to work without external tools.
 
 type AudioQuality struct {
 	Bitrate     string

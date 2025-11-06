@@ -2,24 +2,26 @@ package services
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/qoal/file-processor/config"
 	"github.com/qoal/file-processor/models"
+	"github.com/qoal/file-processor/storage"
 	"github.com/qoal/file-processor/utils"
 )
 
 type EnhancedImageProcessor struct {
-	config    *config.Config
-	s3Service *S3Service
+	config       *config.Config
+	localStorage *storage.LocalStorage
 }
 
-func NewEnhancedImageProcessor(cfg *config.Config, s3 *S3Service) *EnhancedImageProcessor {
+func NewEnhancedImageProcessor(cfg *config.Config, storage *storage.LocalStorage) *EnhancedImageProcessor {
 	return &EnhancedImageProcessor{
-		config:    cfg,
-		s3Service: s3,
+		config:       cfg,
+		localStorage: storage,
 	}
 }
 
@@ -27,14 +29,27 @@ func (p *EnhancedImageProcessor) ProcessImage(job *models.ProcessingJob) error {
 	job.Status = "processing"
 	job.Progress = 10
 
-	// Download input file from S3
+	// Download input file from storage
 	ext, err := utils.GetImageExtension(job.SourceFormat)
 	if err != nil {
 		return fmt.Errorf("failed to get image extension: %w", err)
 	}
 	inputFile := filepath.Join(p.config.TempDir, job.JobID+"_input"+ext)
-	if err := p.s3Service.DownloadFile(job.InputPath, inputFile); err != nil {
-		return fmt.Errorf("failed to download input file: %w", err)
+	inputFileObj, err := p.localStorage.GetFile(job.InputPath)
+	if err != nil {
+		return fmt.Errorf("failed to get input file: %w", err)
+	}
+	defer inputFileObj.Close()
+
+	// Copy file to temp location
+	out, err := os.Create(inputFile)
+	if err != nil {
+		return fmt.Errorf("failed to create temp file: %w", err)
+	}
+	defer out.Close()
+
+	if _, err := io.Copy(out, inputFileObj); err != nil {
+		return fmt.Errorf("failed to copy image file: %w", err)
 	}
 
 	job.Progress = 30
@@ -47,14 +62,30 @@ func (p *EnhancedImageProcessor) ProcessImage(job *models.ProcessingJob) error {
 
 	job.Progress = 80
 
-	// Upload result to S3
-	outputKey := fmt.Sprintf("outputs/%d/%s/converted_%s", job.UserID, job.JobID,
-		filepath.Base(outputFile))
-	if err := p.s3Service.UploadFile(outputFile, outputKey); err != nil {
-		return fmt.Errorf("failed to upload result: %w", err)
+	// Save result to storage
+	// Create output filename with job ID and target format
+	outputFilename := fmt.Sprintf("converted_%s.%s", job.JobID, job.TargetFormat)
+
+	// Open output file for reading
+	outFile, err := os.Open(outputFile)
+	if err != nil {
+		return fmt.Errorf("failed to open output file: %w", err)
+	}
+	defer outFile.Close()
+
+	// Get file info for size
+	fileInfo, err := outFile.Stat()
+	if err != nil {
+		return fmt.Errorf("failed to get file info: %w", err)
 	}
 
-	job.OutputPath = outputKey
+	// Save to processed directory using the local storage
+	outputPath, err := p.localStorage.SaveFile(outFile, outputFilename, fileInfo.Size())
+	if err != nil {
+		return fmt.Errorf("failed to save result: %w", err)
+	}
+
+	job.OutputPath = outputPath
 	job.Status = "completed"
 	job.Progress = 100
 
@@ -78,20 +109,31 @@ func (p *EnhancedImageProcessor) executeImageConversion(inputFile string, job *m
 		return p.convertJPEGtoPNG(inputFile, outputFile, job)
 	case "PNG_TO_JPEG":
 		return p.convertPNGtoJPEG(inputFile, outputFile, job)
-	case "PNG_TO_WEBP":
-		return p.convertPNGtoWebP(inputFile, outputFile, job)
-	case "JPEG_TO_WEBP":
-		return p.convertJPEGtoWebP(inputFile, outputFile, job)
-	case "WEBP_TO_JPEG":
-		return p.convertWebPtoJPEG(inputFile, outputFile, job)
-	case "WEBP_TO_PNG":
-		return p.convertWebPtoPNG(inputFile, outputFile, job)
-	case "HEIC_TO_JPEG":
-		return p.convertHEICtoJPEG(inputFile, outputFile, job)
 	case "BMP_TO_JPEG":
 		return p.convertBMPtoJPEG(inputFile, outputFile, job)
 	case "TIFF_TO_PNG":
 		return p.convertTIFFtoPNG(inputFile, outputFile, job)
+	case "JPEG_TO_BMP":
+		return p.convertJPEGtoBMP(inputFile, outputFile, job)
+	case "PNG_TO_BMP":
+		return p.convertPNGtoBMP(inputFile, outputFile, job)
+	case "JPEG_TO_TIFF":
+		return p.convertJPEGtoTIFF(inputFile, outputFile, job)
+	case "PNG_TO_TIFF":
+		return p.convertPNGtoTIFF(inputFile, outputFile, job)
+	case "GIF_TO_JPEG":
+		return p.convertGIFtoJPEG(inputFile, outputFile, job)
+	case "GIF_TO_PNG":
+		return p.convertGIFtoPNG(inputFile, outputFile, job)
+	case "PNG_TO_WEBP", "JPEG_TO_WEBP":
+		// For now, fall back to generic conversion for WebP since we need additional libraries
+		return p.genericImageConversion(inputFile, outputFile, job)
+	case "WEBP_TO_JPEG", "WEBP_TO_PNG":
+		// For now, fall back to generic conversion for WebP since we need additional libraries
+		return p.genericImageConversion(inputFile, outputFile, job)
+	case "HEIC_TO_JPEG":
+		// These formats require special handling, use generic for now
+		return p.genericImageConversion(inputFile, outputFile, job)
 	default:
 		return p.genericImageConversion(inputFile, outputFile, job)
 	}

@@ -116,14 +116,16 @@ func (p *EnhancedDocumentProcessor) executeDocumentConversion(inputFile string, 
 		return p.convertPDFtoText(inputFile, outputFile, job)
 	case "TEXT_TO_PDF":
 		return p.convertTextToPDF(inputFile, outputFile, job)
-	case "PDF_TO_DOCX":
-		return p.convertPDFToDocx(inputFile, outputFile, job)
-	case "DOCX_TO_PDF":
-		return p.convertDocxToPDF(inputFile, outputFile, job)
-	case "XLSX_TO_CSV":
-		return p.convertXlsxToCSV(inputFile, outputFile, job)
 	default:
-		return p.genericDocumentConversion(inputFile, outputFile, job)
+		// For unsupported conversions, just copy the file
+		inputData, err := os.ReadFile(inputFile)
+		if err != nil {
+			return "", fmt.Errorf("failed to read input document file: %w", err)
+		}
+		if err := os.WriteFile(outputFile, inputData, 0644); err != nil {
+			return "", fmt.Errorf("failed to write output document file: %w", err)
+		}
+		return outputFile, nil
 	}
 }
 
@@ -140,64 +142,4 @@ func (p *EnhancedDocumentProcessor) validateDocument(filePath string) error {
 
 	// Basic file validation
 	return nil
-}
-
-func (p *EnhancedDocumentProcessor) convertPDFToDocx(inputFile, outputFile string, job *models.ProcessingJob) (string, error) {
-	// For now, just copy the file since we don't have LibreOffice
-	// This allows the system to work without external dependencies
-	inputData, err := os.ReadFile(inputFile)
-	if err != nil {
-		return "", fmt.Errorf("failed to read input document file: %w", err)
-	}
-
-	if err := os.WriteFile(outputFile, inputData, 0644); err != nil {
-		return "", fmt.Errorf("failed to write output document file: %w", err)
-	}
-
-	return outputFile, nil
-}
-
-func (p *EnhancedDocumentProcessor) convertDocxToPDF(inputFile, outputFile string, job *models.ProcessingJob) (string, error) {
-	// For now, just copy the file since we don't have LibreOffice
-	// This allows the system to work without external dependencies
-	inputData, err := os.ReadFile(inputFile)
-	if err != nil {
-		return "", fmt.Errorf("failed to read input document file: %w", err)
-	}
-
-	if err := os.WriteFile(outputFile, inputData, 0644); err != nil {
-		return "", fmt.Errorf("failed to write output document file: %w", err)
-	}
-
-	return outputFile, nil
-}
-
-func (p *EnhancedDocumentProcessor) convertXlsxToCSV(inputFile, outputFile string, job *models.ProcessingJob) (string, error) {
-	// For now, just copy the file since we don't have LibreOffice
-	// This allows the system to work without external dependencies
-	inputData, err := os.ReadFile(inputFile)
-	if err != nil {
-		return "", fmt.Errorf("failed to read input document file: %w", err)
-	}
-
-	if err := os.WriteFile(outputFile, inputData, 0644); err != nil {
-		return "", fmt.Errorf("failed to write output document file: %w", err)
-	}
-
-	return outputFile, nil
-}
-
-func (p *EnhancedDocumentProcessor) genericDocumentConversion(inputFile, outputFile string, job *models.ProcessingJob) (string, error) {
-	// For now, just copy the file since we don't have LibreOffice
-	// This allows the system to work without external dependencies
-	inputData, err := os.ReadFile(inputFile)
-	if err != nil {
-		return "", fmt.Errorf("failed to read input document file: %w", err)
-	}
-
-	if err := os.WriteFile(outputFile, inputData, 0644); err != nil {
-		return "", fmt.Errorf("failed to write output document file: %w", err)
-	}
-
-	return outputFile, nil
 }

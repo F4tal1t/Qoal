@@ -5,7 +5,6 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/qoal/file-processor/config"
 	"github.com/qoal/file-processor/models"
@@ -108,18 +107,18 @@ func (p *EnhancedVideoProcessor) executeVideoConversion(inputFile string, job *m
 	}
 	outputFile := filepath.Join(p.config.OutputDir, job.JobID+"_output"+ext)
 
-	// Get video preset
-	preset := p.getVideoPreset(job.Settings)
-
-	conversionType := strings.ToUpper(job.SourceFormat) + "_TO_" + strings.ToUpper(job.TargetFormat)
-	switch conversionType {
-	case "MP4_TO_AVI":
-		return p.convertMP4toAVI(inputFile, outputFile, preset, job)
-	case "MOV_TO_MP4":
-		return p.convertMOVtoMP4(inputFile, outputFile, preset, job)
-	default:
-		return p.genericVideoConversion(inputFile, outputFile, preset, job)
+	// For now, just copy the file since video conversion is complex
+	// In production, you'd use a proper video processing library
+	inputData, err := os.ReadFile(inputFile)
+	if err != nil {
+		return "", fmt.Errorf("failed to read input video file: %w", err)
 	}
+
+	if err := os.WriteFile(outputFile, inputData, 0644); err != nil {
+		return "", fmt.Errorf("failed to write output video file: %w", err)
+	}
+
+	return outputFile, nil
 }
 
 func (p *EnhancedVideoProcessor) getVideoPreset(settings map[string]interface{}) VideoPreset {
@@ -157,49 +156,4 @@ func (p *EnhancedVideoProcessor) getVideoPreset(settings map[string]interface{})
 		return preset
 	}
 	return presets["720p"] // Default
-}
-
-func (p *EnhancedVideoProcessor) convertMP4toAVI(inputFile, outputFile string, preset VideoPreset, job *models.ProcessingJob) (string, error) {
-	// For now, just copy the file since we don't have FFmpeg
-	// This allows the system to work without external dependencies
-	inputData, err := os.ReadFile(inputFile)
-	if err != nil {
-		return "", fmt.Errorf("failed to read input video file: %w", err)
-	}
-
-	if err := os.WriteFile(outputFile, inputData, 0644); err != nil {
-		return "", fmt.Errorf("failed to write output video file: %w", err)
-	}
-
-	return outputFile, nil
-}
-
-func (p *EnhancedVideoProcessor) convertMOVtoMP4(inputFile, outputFile string, preset VideoPreset, job *models.ProcessingJob) (string, error) {
-	// For now, just copy the file since we don't have FFmpeg
-	// This allows the system to work without external dependencies
-	inputData, err := os.ReadFile(inputFile)
-	if err != nil {
-		return "", fmt.Errorf("failed to read input video file: %w", err)
-	}
-
-	if err := os.WriteFile(outputFile, inputData, 0644); err != nil {
-		return "", fmt.Errorf("failed to write output video file: %w", err)
-	}
-
-	return outputFile, nil
-}
-
-func (p *EnhancedVideoProcessor) genericVideoConversion(inputFile, outputFile string, preset VideoPreset, job *models.ProcessingJob) (string, error) {
-	// For now, just copy the file since we don't have FFmpeg
-	// This allows the system to work without external dependencies
-	inputData, err := os.ReadFile(inputFile)
-	if err != nil {
-		return "", fmt.Errorf("failed to read input video file: %w", err)
-	}
-
-	if err := os.WriteFile(outputFile, inputData, 0644); err != nil {
-		return "", fmt.Errorf("failed to write output video file: %w", err)
-	}
-
-	return outputFile, nil
 }

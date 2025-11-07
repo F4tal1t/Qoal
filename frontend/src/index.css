@@ -1,13 +1,190 @@
-@import url('https://fonts.googleapis.com/css2?family=Doto:wght@100..900&display=swap');
+/* Import Google Fonts - Paytone One for Display */
+@import url('https://fonts.googleapis.com/css2?family=Paytone+One&display=swap');
+
+/* Import Tailwind CSS */
+@import "tailwindcss";
+
+/* Custom Font Definitions */
+@font-face {
+  font-family: 'Tiny-Regular';
+  src: url('/Tiny-Regular.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@theme {
+  --color-black: #161B27;
+  --color-main-bg: #1e2433;
+  --color-primary: #ff785a;
+  --color-primary-hover: #FF5833;
+  --color-secondary: #ffb947;
+  --color-text: #cae2e2;
+  --color-bg: #242424;
+
+  /* Font Families */
+  --font-display: 'Paytone One', sans-serif;
+  --font-text: 'Tiny-Regular', sans-serif;
+}
+
+@layer utilities {
+  .flex-center {
+    @apply flex items-center justify-center;
+  }
+  
+  .col-center {
+    @apply flex flex-col items-center justify-center;
+  }
+  
+  .abs-center {
+    @apply absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2;
+  }
+  
+  .general-title {
+    @apply 2xl:text-[8.5rem] md:text-8xl text-5xl font-bold uppercase leading-[9vw] tracking-[-.35vw];
+    font-family: var(--font-display);
+  }
+  
+  /* Font Utilities */
+  .font-display {
+    font-family: var(--font-display);
+  }
+  
+  .font-text {
+    font-family: var(--font-text);
+  }
+}
+
+@layer components {
+  /* Conversion History Styles */
+  .conversion-history {
+    margin: 2rem 0;
+    padding: 1.5rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 0.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .history-toggle {
+    background: var(--color-primary);
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    font-weight: 500;
+  }
+
+  .history-toggle:hover {
+    background: var(--color-primary-dark);
+  }
+
+  .history-list {
+    margin-top: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .history-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 0.25rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .history-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .file-name {
+    font-weight: 500;
+    color: var(--color-text);
+  }
+
+  .status {
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+
+  .status.completed {
+    color: #10b981;
+  }
+
+  .status.processing {
+    color: #f59e0b;
+  }
+
+  .status.failed {
+    color: #ef4444;
+  }
+
+  .download-link {
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: 500;
+    padding: 0.25rem 0.5rem;
+    border: 1px solid var(--color-primary);
+    border-radius: 0.25rem;
+    transition: all 0.2s;
+  }
+
+  .download-link:hover {
+    background: var(--color-primary);
+    color: white;
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Base styles */
+:root {
+  font-family: var(--font-text);
+  line-height: 1.5;
+  font-weight: 400;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
 
 body {
   margin: 0;
-  font-family: 'Doto', monospace;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  background: #2a2a2a;
+  min-width: 320px;
+  min-height: 100vh;
+  font-family: var(--font-text);
 }
 
-code {
-  font-family: 'Doto', monospace;
+/* Display font for headings */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  font-weight: normal;
+}
+
+/* Dark mode (default) */
+@media (prefers-color-scheme: dark) {
+  :root {
+    color: var(--color-text);
+    background-color: var(--color-bg);
+  }
+}
+
+/* Light mode */
+@media (prefers-color-scheme: light) {
+  :root {
+    color: var(--color-light-text);
+    background-color: var(--color-light-bg);
+  }
 }

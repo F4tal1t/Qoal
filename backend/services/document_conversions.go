@@ -5,26 +5,11 @@ import (
 	"os"
 	"strings"
 
+	"github.com/jung-kurt/gofpdf"
 	"github.com/qoal/file-processor/models"
+	"github.com/unidoc/unioffice/document"
+	"github.com/unidoc/unioffice/spreadsheet"
 )
-
-func (p *EnhancedDocumentProcessor) convertPDFtoText(input, output string, job *models.ProcessingJob) (string, error) {
-	// For now, just copy the file since pdfcpu text extraction is complex
-	// This allows the system to work without complex PDF processing
-	inputData, err := os.ReadFile(input)
-	if err != nil {
-		return "", fmt.Errorf("failed to read input document file: %w", err)
-	}
-
-	// Convert to text representation (basic)
-	textContent := fmt.Sprintf("PDF content extracted from %s\nFile size: %d bytes", input, len(inputData))
-
-	if err := os.WriteFile(output, []byte(textContent), 0644); err != nil {
-		return "", fmt.Errorf("failed to write text file: %w", err)
-	}
-
-	return output, nil
-}
 
 func (p *EnhancedDocumentProcessor) convertTextToPDF(input, output string, job *models.ProcessingJob) (string, error) {
 	// Read text content
@@ -33,16 +18,146 @@ func (p *EnhancedDocumentProcessor) convertTextToPDF(input, output string, job *
 		return "", fmt.Errorf("failed to read text file: %w", err)
 	}
 
-	// Create a simple text-based PDF representation
-	contentStr := string(content)
-	lines := strings.Split(contentStr, "\n")
+	// Create PDF using gofpdf
+	pdf := gofpdf.New("P", "mm", "A4", "")
+	pdf.AddPage()
 
-	// Create a simple representation
-	pdfContent := fmt.Sprintf("Text document converted to PDF\nOriginal content:\n%s", strings.Join(lines[:min(len(lines), 10)], "\n"))
+	// Set font
+	pdf.SetFont("Arial", "", 12)
 
-	// Write the PDF content
-	if err := os.WriteFile(output, []byte(pdfContent), 0644); err != nil {
+	// Add text content
+	lines := strings.Split(string(content), "\n")
+	for i, line := range lines {
+		pdf.Text(10, 20+float64(i*8), line)
+	}
+
+	// Write PDF to output file
+	if err := pdf.OutputFileAndClose(output); err != nil {
 		return "", fmt.Errorf("failed to write PDF file: %w", err)
+	}
+
+	return output, nil
+}
+
+func (p *EnhancedDocumentProcessor) convertDocxToText(input, output string, job *models.ProcessingJob) (string, error) {
+	// Open DOCX document
+	doc, err := document.Open(input)
+	if err != nil {
+		return "", fmt.Errorf("failed to open DOCX: %w", err)
+	}
+	defer doc.Close()
+
+	// Extract text content
+	var textContent strings.Builder
+
+	// Extract text from paragraphs
+	for _, para := range doc.Paragraphs() {
+		for _, run := range para.Runs() {
+			textContent.WriteString(run.Text())
+		}
+		textContent.WriteString("\n")
+	}
+
+	// Write text to output file
+	if err := os.WriteFile(output, []byte(textContent.String()), 0644); err != nil {
+		return "", fmt.Errorf("failed to write text file: %w", err)
+	}
+
+	return output, nil
+}
+
+func (p *EnhancedDocumentProcessor) convertTextToDocx(input, output string, job *models.ProcessingJob) (string, error) {
+	// Read text content
+	content, err := os.ReadFile(input)
+	if err != nil {
+		return "", fmt.Errorf("failed to read text file: %w", err)
+	}
+
+	// Create new DOCX document
+	doc := document.New()
+	defer doc.Close()
+
+	// Add text content as paragraphs
+	lines := strings.Split(string(content), "\n")
+	for _, line := range lines {
+		para := doc.AddParagraph()
+		run := para.AddRun()
+		run.AddText(line)
+	}
+
+	// Save document
+	if err := doc.SaveToFile(output); err != nil {
+		return "", fmt.Errorf("failed to save DOCX file: %w", err)
+	}
+
+	return output, nil
+}
+
+func (p *EnhancedDocumentProcessor) convertXlsxToCSV(input, output string, job *models.ProcessingJob) (string, error) {
+	// Open XLSX spreadsheet
+	ss, err := spreadsheet.Open(input)
+	if err != nil {
+		return "", fmt.Errorf("failed to open XLSX: %w", err)
+	}
+	defer ss.Close()
+
+	// Get the first sheet
+	sheet := ss.Sheets()[0]
+
+	// Convert to CSV format
+	var csvContent strings.Builder
+
+	// Iterate through rows and cells
+	for _, row := range sheet.Rows() {
+		var cells []string
+		for _, cell := range row.Cells() {
+			cells = append(cells, cell.GetString())
+		}
+		csvContent.WriteString(strings.Join(cells, ","))
+		csvContent.WriteString("\n")
+	}
+
+	// Write CSV to output file
+	if err := os.WriteFile(output, []byte(csvContent.String()), 0644); err != nil {
+		return "", fmt.Errorf("failed to write CSV file: %w", err)
+	}
+
+	return output, nil
+}
+
+func (p *EnhancedDocumentProcessor) convertCSVToXlsx(input, output string, job *models.ProcessingJob) (string, error) {
+	// Read CSV content
+	content, err := os.ReadFile(input)
+	if err != nil {
+		return "", fmt.Errorf("failed to read CSV file: %w", err)
+	}
+
+	// Create new spreadsheet
+	ss := spreadsheet.New()
+	defer ss.Close()
+
+	// Add a sheet
+	sheet := ss.AddSheet()
+
+	// Parse CSV and populate sheet
+	lines := strings.Split(string(content), "\n")
+	for _, line := range lines {
+		if line == "" {
+			continue
+		}
+
+		cells := strings.Split(line, ",")
+		row := sheet.AddRow()
+
+		for _, cellValue := range cells {
+			cell := row.AddCell()
+			cell.SetString(cellValue)
+		}
+	}
+
+	// Save spreadsheet
+	if err := ss.SaveToFile(output); err != nil {
+		return "", fmt.Errorf("failed to save XLSX file: %w", err)
 	}
 
 	return output, nil
@@ -70,11 +185,4 @@ func (p *EnhancedDocumentProcessor) mergePDFs(inputFiles []string, output string
 	}
 
 	return output, nil
-}
-
-func min(a, b int) int {
-	if a < b {
-		return a
-	}
-	return b
 }

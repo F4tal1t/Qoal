@@ -107,18 +107,27 @@ func (p *EnhancedVideoProcessor) executeVideoConversion(inputFile string, job *m
 	}
 	outputFile := filepath.Join(p.config.OutputDir, job.JobID+"_output"+ext)
 
-	// For now, just copy the file since video conversion is complex
-	// In production, you'd use a proper video processing library
-	inputData, err := os.ReadFile(inputFile)
-	if err != nil {
-		return "", fmt.Errorf("failed to read input video file: %w", err)
+	conversionType := job.SourceFormat + "_TO_" + job.TargetFormat
+	switch conversionType {
+	case "MP4_TO_AVI":
+		return p.convertMP4toAVI(inputFile, outputFile, job)
+	case "AVI_TO_MP4":
+		return p.convertAVItoMP4(inputFile, outputFile, job)
+	case "MP4_TO_MOV":
+		return p.convertMP4toMOV(inputFile, outputFile, job)
+	case "MOV_TO_MP4":
+		return p.convertMOVtoMP4(inputFile, outputFile, job)
+	case "MP4_TO_WEBM":
+		return p.convertMP4toWEBM(inputFile, outputFile, job)
+	case "WEBM_TO_MP4":
+		return p.convertWEBMtoMP4(inputFile, outputFile, job)
+	case "MP4_TO_MKV":
+		return p.convertMP4toMKV(inputFile, outputFile, job)
+	case "MKV_TO_MP4":
+		return p.convertMKVtoMP4(inputFile, outputFile, job)
+	default:
+		return "", fmt.Errorf("unsupported video conversion: %s", conversionType)
 	}
-
-	if err := os.WriteFile(outputFile, inputData, 0644); err != nil {
-		return "", fmt.Errorf("failed to write output video file: %w", err)
-	}
-
-	return outputFile, nil
 }
 
 func (p *EnhancedVideoProcessor) getVideoPreset(settings map[string]interface{}) VideoPreset {

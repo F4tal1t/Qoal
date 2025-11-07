@@ -3,6 +3,13 @@ module github.com/qoal/file-processor
 go 1.24.10
 
 require (
+	// ===========================================
+	// IMAGE CONVERSION LIBRARIES
+	// ===========================================
+
+	// Core image processing and format conversions (JPG, PNG, GIF, BMP, TIFF, WebP)
+	github.com/disintegration/imaging v1.6.2
+	
 	// Core Web Framework & Dependencies
 	github.com/gin-contrib/cors v1.7.2
 	github.com/gin-gonic/gin v1.10.1
@@ -10,102 +17,153 @@ require (
 	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/google/uuid v1.6.0
 	github.com/joho/godotenv v1.5.1
-	golang.org/x/crypto v0.23.0
-	gorm.io/driver/postgres v1.5.4
-	gorm.io/gorm v1.30.0
-	
+
+	// PDF creation from text/documents (PDF generation)
+	github.com/jung-kurt/gofpdf v1.16.2
+
+	// ===========================================
+	// ARCHIVE CONVERSION LIBRARIES
+	// ===========================================
+
+	// Multi-format archive support: ZIP, TAR, 7Z, RAR, GZ, BZ2, XZ, LZ4
+	github.com/mholt/archiver/v3 v3.5.1
+
 	// ===========================================
 	// DOCUMENT CONVERSION LIBRARIES
 	// ===========================================
-	
-	// Microsoft Office formats (DOCX, XLSX, PPTX)
+
+	// Microsoft Office formats (DOCX, XLSX, PPTX, DOC, XLS, PPT)
 	github.com/unidoc/unioffice v1.35.0
 	
-	// PDF processing and text extraction
-	github.com/gen2brain/go-fitz v1.24.13
+	// Cryptographic functions (password protection, encryption)
+	golang.org/x/crypto v0.25.0
 	
-	// PDF creation from text/documents
-	github.com/jung-kurt/gofpdf v1.16.2
-	
-	// ===========================================
-	// IMAGE CONVERSION LIBRARIES
-	// ===========================================
-	
-	// Core image processing and format conversions
-	github.com/disintegration/imaging v1.6.2
+	// Extended image format support (additional codecs)
 	golang.org/x/image v0.32.0
 	
-	// ===========================================
-	// VIDEO CONVERSION LIBRARIES
-	// ===========================================
-	
-	// FFmpeg Go bindings for video format conversions
-	// Supports: MP4↔AVI, MOV↔MP4, MP4↔MKV, etc.
-	github.com/u2takey/ffmpeg-go v0.5.0
-	
+	// Database drivers
+	gorm.io/driver/postgres v1.5.4
+	gorm.io/gorm v1.30.0
+)
+
+require (
 	// ===========================================
 	// AUDIO CONVERSION LIBRARIES
 	// ===========================================
 	
-	// MP3 decoding and encoding
-	github.com/hajimehoshi/go-mp3 v0.3.4
+	// MP3 decoding library for audio processing
+	github.com/hajimehoshi/go-mp3 v0.3.4 // indirect
 	
-	// WAV format support
-	github.com/go-audio/wav v1.1.0
+	// Audio playback and processing library
+	github.com/hajimehoshi/oto/v2 v2.4.3 // indirect
 	
-	// FLAC format support
-	github.com/go-audio/flac v1.0.0
+	// WAV audio format encoding/decoding
+	github.com/go-audio/wav v1.1.0 // indirect
 	
-	// AAC format support
-	github.com/go-audio/aac v1.0.0
+	// Audio buffer management and PCM data handling
+	github.com/go-audio/audio v1.0.0 // indirect
 	
-	// Audio processing primitives (used by all audio formats)
-	github.com/go-audio/audio v1.0.0
+	// RIFF file format support (used by WAV)
+	github.com/go-audio/riff v1.0.0 // indirect
 	
-	// Bit-level I/O operations for audio data
-	github.com/icza/bitio v1.1.0
+	// ID3 metadata tags for MP3 files
+	github.com/bogem/id3v2/v2 v2.1.4 // indirect
+	
+	// Basic MP3 encoding utilities
+	github.com/tcolgate/mp3 v0.0.0-20170426193717-e79c5a46d300 // indirect
+	
+	// Pure Go implementation for audio processing
+	github.com/ebitengine/purego v0.4.1 // indirect
 	
 	// ===========================================
-	// ARCHIVE CONVERSION LIBRARIES
+	// ARCHIVE SUPPORT LIBRARIES
 	// ===========================================
 	
-	// Multi-format archive support: ZIP, TAR, 7Z, RAR, GZ
-	github.com/mholt/archiver/v3 v3.5.1
-)
-
-require (
+	// Brotli compression algorithm support
+	github.com/andybalholm/brotli v1.0.1 // indirect
+	
+	// Snappy compression algorithm
+	github.com/golang/snappy v0.0.2 // indirect
+	
+	// LZ4 compression algorithm
+	github.com/pierrec/lz4/v4 v4.1.2 // indirect
+	
+	// XZ compression algorithm
+	github.com/ulikunitz/xz v0.5.9 // indirect
+	
+	// Additional XZ compression support
+	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8 // indirect
+	
+	// RAR archive format decoder
+	github.com/nwaples/rardecode v1.1.0 // indirect
+	
+	// Multi-format compression library
+	github.com/dsnet/compress v0.0.2-0.20210315054119-f66993602bf5 // indirect
+	
+	// ===========================================
+	// DOCUMENT SUPPORT LIBRARIES
+	// ===========================================
+	
+	// Microsoft Office document parsing (OLE format)
+	github.com/richardlehane/msoleps v1.0.3 // indirect
+	
+	// ===========================================
+	// CORE FRAMEWORK DEPENDENCIES
+	// ===========================================
+	
+	// Web framework components
 	github.com/bytedance/sonic v1.11.6 // indirect
 	github.com/bytedance/sonic/loader v0.1.1 // indirect
-	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/cloudwego/base64x v0.1.4 // indirect
 	github.com/cloudwego/iasm v0.2.0 // indirect
-	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
-	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-playground/validator/v10 v10.20.0 // indirect
 	github.com/goccy/go-json v0.10.2 // indirect
-	github.com/jackc/pgpassfile v1.0.0 // indirect
-	github.com/jackc/pgservicefile v0.0.0-20221227161230-091c0ba34f0a // indirect
-	github.com/jackc/pgx/v5 v5.4.3 // indirect
-	github.com/jinzhu/inflection v1.0.0 // indirect
-	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.7 // indirect
-	github.com/kr/text v0.2.0 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.2 // indirect
-	github.com/stretchr/testify v1.11.1 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.2.12 // indirect
+	
+	// Redis caching support
+	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
+	
+	// Database drivers
+	github.com/jackc/pgpassfile v1.0.0 // indirect
+	github.com/jackc/pgservicefile v0.0.0-20221227161230-091c0ba34f0a // indirect
+	github.com/jackc/pgx/v5 v5.4.3 // indirect
+	github.com/jinzhu/inflection v1.0.0 // indirect
+	github.com/jinzhu/now v1.1.5 // indirect
+	
+	// Compression libraries
+	github.com/klauspost/compress v1.11.4 // indirect
+	github.com/klauspost/pgzip v1.2.5 // indirect
+	
+	// Testing utilities
+	github.com/stretchr/testify v1.11.1 // indirect
+	github.com/kr/text v0.2.0 // indirect
+	
+	// MIME type detection
+	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
+	
+	// System libraries
 	golang.org/x/arch v0.8.0 // indirect
-	golang.org/x/net v0.25.0 // indirect
-	golang.org/x/sys v0.20.0 // indirect
+	golang.org/x/net v0.27.0 // indirect
+	golang.org/x/sys v0.22.0 // indirect
 	golang.org/x/text v0.30.0 // indirect
+	
+	// Protocol buffer support
 	google.golang.org/protobuf v1.34.1 // indirect
+	
+	// YAML configuration support
 	gopkg.in/yaml.v3 v3.0.1 // indirect
+	
+	// Hash function utilities
+	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 )

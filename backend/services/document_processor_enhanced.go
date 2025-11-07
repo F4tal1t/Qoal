@@ -112,20 +112,18 @@ func (p *EnhancedDocumentProcessor) executeDocumentConversion(inputFile string, 
 
 	conversionType := strings.ToUpper(job.SourceFormat) + "_TO_" + strings.ToUpper(job.TargetFormat)
 	switch conversionType {
-	case "PDF_TO_TEXT":
-		return p.convertPDFtoText(inputFile, outputFile, job)
 	case "TEXT_TO_PDF":
 		return p.convertTextToPDF(inputFile, outputFile, job)
+	case "DOCX_TO_TEXT":
+		return p.convertDocxToText(inputFile, outputFile, job)
+	case "TEXT_TO_DOCX":
+		return p.convertTextToDocx(inputFile, outputFile, job)
+	case "XLSX_TO_CSV":
+		return p.convertXlsxToCSV(inputFile, outputFile, job)
+	case "CSV_TO_XLSX":
+		return p.convertCSVToXlsx(inputFile, outputFile, job)
 	default:
-		// For unsupported conversions, just copy the file
-		inputData, err := os.ReadFile(inputFile)
-		if err != nil {
-			return "", fmt.Errorf("failed to read input document file: %w", err)
-		}
-		if err := os.WriteFile(outputFile, inputData, 0644); err != nil {
-			return "", fmt.Errorf("failed to write output document file: %w", err)
-		}
-		return outputFile, nil
+		return "", fmt.Errorf("unsupported document conversion: %s", conversionType)
 	}
 }
 

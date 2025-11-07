@@ -109,15 +109,12 @@ func (p *EnhancedAudioProcessor) executeAudioConversion(inputFile string, job *m
 		return p.convertWAVtoMP3(inputFile, outputFile, job)
 	case "FLAC_TO_MP3":
 		return p.convertFLACtoMP3(inputFile, outputFile, job)
-	case "AAC_TO_MP3":
-		return p.convertAACtoMP3(inputFile, outputFile, job)
 	case "M4A_TO_MP3":
 		return p.convertM4AtoMP3(inputFile, outputFile, job)
 	case "OGG_TO_MP3":
 		return p.convertOGGtoMP3(inputFile, outputFile, job)
 	default:
-		// For unsupported conversions, just copy the file
-		return p.copyAudioFile(inputFile, outputFile)
+		return "", fmt.Errorf("unsupported audio conversion: %s", conversionType)
 	}
 }
 

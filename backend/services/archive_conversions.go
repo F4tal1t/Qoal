@@ -1,48 +1,84 @@
 package services
 
 import (
-	"archive/zip"
 	"fmt"
-	"io"
 	"os"
-	"path/filepath"
 
+	"github.com/mholt/archiver/v3"
 	"github.com/qoal/file-processor/models"
 )
 
-func (p *ArchiveProcessor) convert7ZtoZip(input, output string, job *models.ProcessingJob) (string, error) {
-	// For now, just copy the file since we don't have 7z
-	// This allows the system to work without external dependencies
-	inputData, err := os.ReadFile(input)
-	if err != nil {
-		return "", fmt.Errorf("failed to read input archive file: %w", err)
-	}
-
-	if err := os.WriteFile(output, inputData, 0644); err != nil {
-		return "", fmt.Errorf("failed to write output archive file: %w", err)
-	}
-
-	return output, nil
-}
-
 func (p *ArchiveProcessor) convertRarToZip(input, output string, job *models.ProcessingJob) (string, error) {
-	// For now, just copy the file since we don't have unrar
-	// This allows the system to work without external dependencies
-	inputData, err := os.ReadFile(input)
+	// Create temporary directory for extraction
+	tempDir, err := os.MkdirTemp("", "archive_conv_")
 	if err != nil {
-		return "", fmt.Errorf("failed to read input archive file: %w", err)
+		return "", fmt.Errorf("failed to create temp directory: %w", err)
+	}
+	defer os.RemoveAll(tempDir)
+
+	// Extract RAR file
+	rar := archiver.NewRar()
+	if err := rar.Unarchive(input, tempDir); err != nil {
+		return "", fmt.Errorf("failed to extract rar file: %w", err)
 	}
 
-	if err := os.WriteFile(output, inputData, 0644); err != nil {
-		return "", fmt.Errorf("failed to write output archive file: %w", err)
+	// Create ZIP file
+	zip := archiver.NewZip()
+	if err := zip.Archive([]string{tempDir}, output); err != nil {
+		return "", fmt.Errorf("failed to create zip file: %w", err)
 	}
 
 	return output, nil
 }
 
 func (p *ArchiveProcessor) convertTarGzToZip(input, output string, job *models.ProcessingJob) (string, error) {
-	// For now, just copy the file since we don't have tar
-	// This allows the system to work without external dependencies
+	// Create temporary directory for extraction
+	tempDir, err := os.MkdirTemp("", "archive_conv_")
+	if err != nil {
+		return "", fmt.Errorf("failed to create temp directory: %w", err)
+	}
+	defer os.RemoveAll(tempDir)
+
+	// Extract tar.gz file
+	tarGz := archiver.NewTarGz()
+	if err := tarGz.Unarchive(input, tempDir); err != nil {
+		return "", fmt.Errorf("failed to extract tar.gz file: %w", err)
+	}
+
+	// Create ZIP file
+	zip := archiver.NewZip()
+	if err := zip.Archive([]string{tempDir}, output); err != nil {
+		return "", fmt.Errorf("failed to create zip file: %w", err)
+	}
+
+	return output, nil
+}
+
+func (p *ArchiveProcessor) convertZipToTarGz(input, output string, job *models.ProcessingJob) (string, error) {
+	// Create temporary directory for extraction
+	tempDir, err := os.MkdirTemp("", "archive_conv_")
+	if err != nil {
+		return "", fmt.Errorf("failed to create temp directory: %w", err)
+	}
+	defer os.RemoveAll(tempDir)
+
+	// Extract ZIP file
+	zip := archiver.NewZip()
+	if err := zip.Unarchive(input, tempDir); err != nil {
+		return "", fmt.Errorf("failed to extract zip file: %w", err)
+	}
+
+	// Create tar.gz file
+	tarGz := archiver.NewTarGz()
+	if err := tarGz.Archive([]string{tempDir}, output); err != nil {
+		return "", fmt.Errorf("failed to create tar.gz file: %w", err)
+	}
+
+	return output, nil
+}
+
+func (p *ArchiveProcessor) convertZipToZip(input, output string, job *models.ProcessingJob) (string, error) {
+	// Simple copy for same format
 	inputData, err := os.ReadFile(input)
 	if err != nil {
 		return "", fmt.Errorf("failed to read input archive file: %w", err)
@@ -56,52 +92,7 @@ func (p *ArchiveProcessor) convertTarGzToZip(input, output string, job *models.P
 }
 
 func (p *ArchiveProcessor) createZipFromDirectory(sourceDir, zipPath string) error {
-	zipFile, err := os.Create(zipPath)
-	if err != nil {
-		return err
-	}
-	defer zipFile.Close()
-
-	zipWriter := zip.NewWriter(zipFile)
-	defer zipWriter.Close()
-
-	return filepath.Walk(sourceDir, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-
-		// Skip the root directory itself
-		if path == sourceDir {
-			return nil
-		}
-
-		// Get relative path
-		relPath, err := filepath.Rel(sourceDir, path)
-		if err != nil {
-			return err
-		}
-
-		// Create zip entry
-		if info.IsDir() {
-			// Create directory entry
-			_, err := zipWriter.Create(relPath + "/")
-			return err
-		}
-
-		// Create file entry
-		zipEntry, err := zipWriter.Create(relPath)
-		if err != nil {
-			return err
-		}
-
-		// Copy file content
-		file, err := os.Open(path)
-		if err != nil {
-			return err
-		}
-		defer file.Close()
-
-		_, err = io.Copy(zipEntry, file)
-		return err
-	})
+	// Use archiver library to create ZIP from directory
+	zip := archiver.NewZip()
+	return zip.Archive([]string{sourceDir}, zipPath)
 }

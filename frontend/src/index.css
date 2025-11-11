@@ -167,6 +167,7 @@
       opacity: 1 !important;
       width: 40% !important;
       max-width: 150px !important;
+      z-index: 1 !important;
     }
 
     .scroll-progress {

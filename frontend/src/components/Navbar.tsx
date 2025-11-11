@@ -4,14 +4,14 @@ interface NavbarProps {
   transparent?: boolean;
 }
 
-const Navbar: React.FC<NavbarProps> = ({ transparent = true }) => {
+const Navbar: React.FC<NavbarProps> = () => {
   return (
     <nav style={{
       position: 'fixed',
       top: '1rem',
       left: '50%',
       transform: 'translateX(-50%)',
-      zIndex: 1000,
+      zIndex: 10,
       backgroundColor: '#161b27',
       borderRadius: '1rem',
       padding: '0.75rem 2rem',

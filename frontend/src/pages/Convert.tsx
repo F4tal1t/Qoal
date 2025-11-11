@@ -1,14 +1,21 @@
 import React, { useState } from 'react';
-import ConversionHistory from '../components/ConversionHistory';
+import { useNavigate } from 'react-router-dom';
+import { api } from '../services/api';
+import { Upload } from '../components/animate-ui/icons/upload';
+import { Paperclip } from '../components/animate-ui/icons/paperclip';
+import { LoaderPinwheel } from '../components/animate-ui/icons/loader-pinwheel';
+import { CircleCheckBig } from '../components/animate-ui/icons/circle-check-big';
+import { MessageSquareWarning } from '../components/animate-ui/icons/message-square-warning';
 
-interface ConvertProps {
-  type: 'image' | 'document' | 'audio' | 'video' | 'archive';
-}
+type ConversionType = 'image' | 'document' | 'audio' | 'video' | 'archive';
 
-const Convert: React.FC<ConvertProps> = ({ type }) => {
+const Convert: React.FC = () => {
+  const [activeType, setActiveType] = useState<ConversionType>('image');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [targetFormat, setTargetFormat] = useState('');
   const [isConverting, setIsConverting] = useState(false);
+  const [error, setError] = useState('');
+  const navigate = useNavigate();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -21,85 +28,77 @@ const Convert: React.FC<ConvertProps> = ({ type }) => {
     if (!selectedFile || !targetFormat) return;
 
     setIsConverting(true);
-    
-    // Handle conversion logic here
-    const formData = new FormData();
-    formData.append('file', selectedFile);
-    formData.append('targetFormat', targetFormat);
-    formData.append('type', type);
+    setError('');
 
     try {
-      // const response = await fetch('/api/process', {
-      //   method: 'POST',
-      //   body: formData,
-      // });
-      // const data = await response.json();
-      // console.log('Conversion started:', data);
-      
-      // Mock conversion
-      setTimeout(() => {
-        setIsConverting(false);
-      
-      // Increment conversion counter
-      const currentCount = parseInt(localStorage.getItem('conversionCount') || '0');
-      const newCount = currentCount + 1;
-      localStorage.setItem('conversionCount', newCount.toString());
-      
-      // Create conversion job
-      const job = {
-        id: Date.now().toString(),
-        type: type,
-        status: 'completed',
-        input_file: selectedFile.name,
-        output_file: selectedFile.name.replace(/\.[^/.]+$/, '') + '.' + targetFormat,
-        created_at: new Date().toISOString()
-      };
-      
-      // Add to conversion history
-      const history = JSON.parse(localStorage.getItem('conversionHistory') || '[]');
-      const updatedHistory = [job, ...history].slice(0, 10);
-      localStorage.setItem('conversionHistory', JSON.stringify(updatedHistory));
-      
-      alert('Conversion completed successfully!');
-      
-      // Navigate to status page
-      window.location.href = `/status/${job.id}`;
-      }, 2000);
-    } catch (error) {
-      console.error('Conversion error:', error);
+      const response = await api.jobs.upload(selectedFile, targetFormat);
+      navigate(`/status/${response.job_id}`);
+    } catch (err: any) {
+      setError(err.message || 'Conversion failed');
       setIsConverting(false);
     }
   };
 
-  const getFormats = () => {
-    const formats = {
-      image: ['JPG', 'PNG', 'WebP', 'GIF', 'BMP', 'TIFF'],
-      document: ['PDF', 'DOCX', 'TXT', 'RTF', 'ODT'],
-      audio: ['MP3', 'WAV', 'FLAC', 'M4A', 'OGG'],
-      video: ['MP4', 'AVI', 'MOV', 'WebM', 'MKV'],
-      archive: ['ZIP', 'RAR', '7Z', 'TAR', 'GZ']
-    };
-    return formats[type] || [];
+  const formats: Record<ConversionType, string[]> = {
+    image: ['jpg', 'png', 'webp', 'gif', 'bmp', 'tiff', 'svg'],
+    document: ['pdf', 'docx', 'txt', 'xlsx', 'csv', 'rtf', 'odt'],
+    audio: ['mp3', 'wav', 'flac', 'aac', 'ogg', 'm4a', 'wma'],
+    video: ['mp4', 'avi', 'mov', 'wmv', 'flv', 'mkv', 'webm', 'm4v'],
+    archive: ['zip', 'rar', '7z', 'tar', 'gz', 'bz2', 'xz']
+  };
+
+  const categoryIcons: Record<ConversionType, string> = {
+    image: '/ImgIco.gif',
+    document: '/DocIco.gif',
+    audio: '/AudIco.gif',
+    video: '/VidIco.gif',
+    archive: '/ArcIco.gif'
   };
 
   return (
-    <div className="flex-center min-h-screen">
+    <div className="convert-page">
+      <div className="category-toggles">
+        {(['image', 'document', 'audio', 'video', 'archive'] as ConversionType[]).map((cat) => (
+          <button
+            key={cat}
+            className={`category-btn ${activeType === cat ? 'active' : ''}`}
+            onClick={() => {
+              setActiveType(cat);
+              setSelectedFile(null);
+              setTargetFormat('');
+            }}
+          >
+            <img src={categoryIcons[cat]} alt={cat} />
+            {cat.charAt(0).toUpperCase() + cat.slice(1)}
+          </button>
+        ))}
+      </div>
+
       <div className="convert-container">
-        <h1>Convert {type.charAt(0).toUpperCase() + type.slice(1)} Files</h1>
-        
+        <h1>Convert {activeType.charAt(0).toUpperCase() + activeType.slice(1)} Files</h1>
+
         <form onSubmit={handleConvert}>
-          <div className="form-group">
-            <label htmlFor="file">Select File</label>
+          <div className="file-upload-area">
             <input
               type="file"
               id="file"
               onChange={handleFileChange}
-              accept={`.${type === 'archive' ? 'zip,rar,7z,tar,gz' : type === 'document' ? 'pdf,docx,txt,rtf,odt' : type === 'audio' ? 'audio/*' : type === 'video' ? 'video/*' : 'image/*'}`}
-              required
+              style={{ display: 'none' }}
             />
-            {selectedFile && (
-              <p className="file-info">Selected: {selectedFile.name}</p>
-            )}
+            <label htmlFor="file" className="upload-label">
+              {selectedFile ? (
+                <>
+                  <Paperclip size={48} animateOnHover />
+                  <p>{selectedFile.name}</p>
+                  <span>{(selectedFile.size / 1024 / 1024).toFixed(2)} MB</span>
+                </>
+              ) : (
+                <>
+                  <Upload size={48} animateOnHover />
+                  <p>Click to upload or drag and drop</p>
+                </>
+              )}
+            </label>
           </div>
 
           <div className="form-group">
@@ -111,30 +110,35 @@ const Convert: React.FC<ConvertProps> = ({ type }) => {
               required
             >
               <option value="">Select format</option>
-              {getFormats().map((format) => (
-                <option key={format} value={format.toLowerCase()}>
-                  {format}
+              {formats[activeType].map((format) => (
+                <option key={format} value={format}>
+                  {format.toUpperCase()}
                 </option>
               ))}
             </select>
           </div>
 
-          <button type="submit" disabled={isConverting}>
-            {isConverting ? 'Converting...' : 'Convert File'}
+          {error && (
+            <div className="error-message">
+              <MessageSquareWarning size={20} />
+              {error}
+            </div>
+          )}
+
+          <button type="submit" disabled={isConverting || !selectedFile || !targetFormat}>
+            {isConverting ? (
+              <>
+                <LoaderPinwheel size={20} animate loop />
+                Converting...
+              </>
+            ) : (
+              <>
+                <CircleCheckBig size={20} animateOnHover />
+                Convert File
+              </>
+            )}
           </button>
         </form>
-
-        <div className="conversion-info">
-          <h3>Supported Formats</h3>
-          <p>Input: {getFormats().join(', ')}</p>
-          <p>Output: {getFormats().join(', ')}</p>
-        </div>
-        
-        <ConversionHistory />
-        
-        <div className="back-link">
-          <a href="/">Back to Home</a>
-        </div>
       </div>
     </div>
   );

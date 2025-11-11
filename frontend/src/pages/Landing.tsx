@@ -366,9 +366,9 @@ const Landing: React.FC = () => {
       </div>
 
       {/* Hero Section */}
-      <section className="hero-section" style={{ height: '100vh', position: 'relative', overflow: 'hidden', zIndex: 1 }}>
+      <section className="hero-section" style={{ height: '100vh', position: 'relative', overflow: 'hidden' }}>
         {/* Transparent Navigation Bar */}
-        <Navbar transparent={true} />
+        <Navbar/>
         {/* Hero Content - Positioned on the left side */}
         <div className="hero-content" style={{ 
           position: 'absolute', 
@@ -463,7 +463,7 @@ const Landing: React.FC = () => {
 
 
       {/* Conversion Types Sections */}
-      <section className="conversion-sections" style={{ position: 'relative', zIndex: 1 }}>
+      <section className="conversion-sections" style={{ position: 'relative' }}>
         <div className="section image-conversions" style={{  
           height: '90vh',
           display: 'flex',
@@ -482,7 +482,7 @@ const Landing: React.FC = () => {
               width: '25%',
               height: 'auto',
               maxWidth: '200px',
-              zIndex: 10,
+              zIndex: 5,
               opacity: 0
             }}
           />
@@ -544,7 +544,7 @@ const Landing: React.FC = () => {
               width: '25%',
               height: 'auto',
               maxWidth: '200px',
-              zIndex: 10,
+              zIndex: 5,
               opacity: 0
             }}
           />
@@ -605,7 +605,7 @@ const Landing: React.FC = () => {
               width: '25%',
               height: 'auto',
               maxWidth: '200px',
-              zIndex: 10,
+              zIndex: 5,
               opacity: 0
             }}
           />
@@ -666,7 +666,7 @@ const Landing: React.FC = () => {
               width: '25%',
               height: 'auto',
               maxWidth: '200px',
-              zIndex: 10,
+              zIndex: 5,
               opacity: 0
             }}
           />
@@ -727,7 +727,7 @@ const Landing: React.FC = () => {
               width: '25%',
               height: 'auto',
               maxWidth: '200px',
-              zIndex: 10,
+              zIndex: 5,
               opacity: 0
             }}
           />

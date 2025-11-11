@@ -11,7 +11,7 @@ const Navbar: React.FC<NavbarProps> = ({ transparent = true }) => {
       top: '1rem',
       left: '50%',
       transform: 'translateX(-50%)',
-      zIndex: 100,
+      zIndex: 1000,
       backgroundColor: '#161b27',
       borderRadius: '1rem',
       padding: '0.75rem 2rem',
@@ -36,34 +36,23 @@ const Navbar: React.FC<NavbarProps> = ({ transparent = true }) => {
         <a href="/convert" style={{
           color: '#fff',
           textDecoration: 'none',
-          fontSize: '1.1rem',
+          fontSize: 'clamp(0.9rem, 2vw, 1.1rem)',
           fontWeight: 500,
           padding: '0.5rem 1rem',
           borderRadius: '0.5rem',
           transition: 'all 0.3s ease'
         }}>Convert</a>
         
-        <a href="/login" style={{
+        <a href="/auth" style={{
           color: '#161b27',
           backgroundColor: '#ffb947',
           textDecoration: 'none',
-          fontSize: '1.1rem',
+          fontSize: 'clamp(0.9rem, 2vw, 1.1rem)',
           fontWeight: 500,
           padding: '0.5rem 1rem',
           borderRadius: '0.5rem',
           transition: 'all 0.3s ease'
-        }}>Login</a>
-        
-        <a href="/signup" style={{
-          color: '#161b27',
-          backgroundColor: '#ffb947',
-          textDecoration: 'none',
-          fontSize: '1.1rem',
-          fontWeight: 500,
-          padding: '0.5rem 1rem',
-          borderRadius: '0.5rem',
-          transition: 'all 0.3s ease'
-        }}>Signup</a>
+        }}>Login/Signup</a>
       </div>
       
       <style>{`

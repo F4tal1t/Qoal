@@ -126,6 +126,14 @@
   }
 
   @media (max-width: 768px) {
+    .hero-content > div:first-child {
+      justify-content: center !important;
+    }
+
+    .hero-section canvas {
+      display: none !important;
+    }
+
     .section {
       flex-direction: column !important;
       justify-content: center !important;
@@ -337,8 +345,9 @@
   --sidebar-ring: oklch(0.705 0.015 286.067);
 }
 
-body {
+html, body {
   margin: 0;
+  padding: 0;
   min-width: 320px;
   min-height: 100vh;
   font-family: var(--font-text);
@@ -441,6 +450,9 @@ h1, h2, h3, h4, h5, h6 {
 @layer base {
   * {
     @apply outline-ring/50;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
   }
   body {
     @apply bg-background text-foreground;

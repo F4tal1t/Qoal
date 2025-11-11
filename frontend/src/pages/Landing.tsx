@@ -135,7 +135,7 @@ const Landing: React.FC = () => {
       gsap.to(model.position, {
         x: -2.5,
         y: 1,
-        ease: 'power1.inOut',
+        ease: 'power2.inOut',
         scrollTrigger: {
           trigger: '.image-conversions',
           start: 'top 95%',
@@ -191,7 +191,7 @@ const Landing: React.FC = () => {
       const gifElement = document.querySelector(selector) as HTMLElement;
       if (gifElement) {
         gsap.fromTo(gifElement,
-          { x: '250%', y: '-80%', opacity: 0 },
+          { x: '300%', y: '-80%', opacity: 0 },
           {
             x: '400%',
             y: '0%',
@@ -390,41 +390,47 @@ const Landing: React.FC = () => {
             <img 
               src="/Qoalation.png" 
               alt="Qoal Logo" 
+              loading="eager"
               style={{
                 width: '100px',
                 height: '100px',
-                objectFit: 'contain'
+                objectFit: 'contain',
+                display: 'block'
               }}
             />
             <img 
               src="/QoalText.png" 
               alt="Qoal Text" 
+              loading="eager"
               style={{
                 height: '40px',
-                objectFit: 'contain'
+                objectFit: 'contain',
+                display: 'block'
               }}
             />
           </div>
           <h1 className="general-title" style={{
             color: '#fff',
-            marginBottom: '2rem',
+            marginBottom: '1rem',
             textShadow: '0 2px 4px rgba(0,0,0,0.3)',
             fontSize: 'clamp(2.5rem, 5vw, 4rem)',
             lineHeight: '1.2',
             fontWeight: 500
-          }}>Convert Your 
-          <RotatingText
-  texts={['Image', 'Video', 'Archive', 'Document', 'Audio']}
-  mainClassName="inline-flex px-1 sm:px-1.5 md:px-2 bg-[#ffb947] text-black overflow-hidden py-0.5 sm:py-0.5 md:py-1 rounded-lg"
-  staggerFrom={"last"}
-  initial={{ y: "100%" }}
-  animate={{ y: 0 }}
-  exit={{ y: "-120%" }}
-  staggerDuration={0.025}
-  splitLevelClassName="overflow-hidden pb-0.5 sm:pb-1 md:pb-1"
-  transition={{ type: "spring", damping: 30, stiffness: 400 }}
-  rotationInterval={2000}
-/></h1>
+          }}>Convert Your</h1>
+          <div style={{ marginBottom: '2rem', fontFamily: 'Poppins', fontSize: 'clamp(2.5rem, 5vw, 4rem)', fontWeight: 500 }}>
+            <RotatingText
+              texts={['Image', 'Video', 'Archive', 'Document', 'Audio']}
+              mainClassName="inline-flex px-2 sm:px-2 md:px-3 bg-[#ffb947] text-black overflow-hidden py-1 sm:py-1 md:py-1 rounded-lg"
+              staggerFrom={"last"}
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "-120%" }}
+              staggerDuration={0.025}
+              splitLevelClassName="overflow-hidden pb-0.5 sm:pb-1 md:pb-1"
+              transition={{ type: "spring", damping: 30, stiffness: 400 }}
+              rotationInterval={2000}
+            />
+          </div>
           <p style={{
             color: '#e9e9ef',
             fontSize: 'clamp(1rem, 2vw, 1.25rem)',
@@ -782,10 +788,10 @@ const Landing: React.FC = () => {
           height: '100%',
           gap: '1rem'
         }}>
-          <p style={{ color: '#e9e9ef', fontSize: '1.5rem' }}>&copy; Qoal it iz. Made with GSAP n Threejs '0.0'</p>
+          <p style={{ color: '#e9e9ef', fontSize: 'clamp(0.9rem, 3vw, 1.5rem)' }}>&copy; Qoal it iz. Made with GSAP n Threejs '0.0'</p>
           <div className="footer-links" style={{ display: 'flex', gap: '2rem' }}>
-            <a href="https://www.github.com/F4tal1t/Qoal" style={{ color: '#ffb947', textDecoration: 'none' }}>Github</a>
-            <a href="https://www.dibby.me" style={{ color: '#ffb947', textDecoration: 'none' }}>Creator's Portfolio</a>
+            <a href="https://www.github.com/F4tal1t/Qoal" style={{ color: '#ffb947', textDecoration: 'none', fontSize: 'clamp(0.85rem, 2.5vw, 1rem)' }}>Github</a>
+            <a href="https://www.dibby.me" style={{ color: '#ffb947', textDecoration: 'none', fontSize: 'clamp(0.85rem, 2.5vw, 1rem)' }}>Creator's Portfolio</a>
           </div>
         </div>
       </footer>

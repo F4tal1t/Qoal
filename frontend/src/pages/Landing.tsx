@@ -146,7 +146,7 @@ const Landing: React.FC = () => {
       });
 
       gsap.to(model.position, {
-        y: 3,
+        y: 2,
         ease: 'power1.inOut',
         scrollTrigger: {
           trigger: '.archive-conversions',
@@ -159,7 +159,7 @@ const Landing: React.FC = () => {
 
       // Z-axis loop animation (runs independently)
       gsap.to(model.position, {
-        z: 0.3,
+        z: 0.1,
         duration: 1,
         ease: 'sine.inOut',
         yoyo: true,
@@ -191,7 +191,7 @@ const Landing: React.FC = () => {
       const gifElement = document.querySelector(selector) as HTMLElement;
       if (gifElement) {
         gsap.fromTo(gifElement,
-          { x: '300%', y: '-50%', opacity: 0 },
+          { x: '250%', y: '-80%', opacity: 0 },
           {
             x: '400%',
             y: '0%',
@@ -199,19 +199,12 @@ const Landing: React.FC = () => {
             ease: 'power2.inOut',
             scrollTrigger: {
               trigger,
-              start: '35% center',
-              end: '50% center',
+              start: '20% 40%',
+              end: '30% 40%',
               scrub: 1
             }
           }
         );
-
-        ScrollTrigger.create({
-          trigger,
-          start: 'bottom center',
-          onLeave: () => gsap.to(gifElement, { x: '0%', opacity: 1, duration: 0.3 }),
-          onEnterBack: () => gsap.to(gifElement, { x: '0%', opacity: 1, duration: 0.3 })
-        });
       }
     });
 
@@ -245,29 +238,31 @@ const Landing: React.FC = () => {
       });
     });
 
-    // Format buttons hover loop animation
-    const formatButtons = document.querySelectorAll('.format-btn');
-    if (formatButtons.length > 0) {
-      const loopTl = gsap.timeline({ repeat: -1 });
-      formatButtons.forEach((btn, index) => {
-        loopTl.to(btn, {
-          backgroundColor: '#ffb947',
-          borderColor: '#ffb947',
-          color: '#161B27',
-          scale: 1.05,
-          duration: 0.3,
-          ease: 'power2.inOut'
-        }).to(btn, {
-          backgroundColor: 'rgba(255, 255, 255, 0.1)',
-          borderColor: 'rgba(255, 255, 255, 0.2)',
-          color: '#fff',
-          scale: 1,
-          duration: 0.3,
-          ease: 'power2.in',
-          delay: 1
+    // Format buttons hover loop animation per section
+    sections.forEach(section => {
+      const sectionButtons = document.querySelectorAll(`.${section}-conversions .format-btn`);
+      if (sectionButtons.length > 0) {
+        const loopTl = gsap.timeline({ repeat: -1 });
+        sectionButtons.forEach((btn) => {
+          loopTl.to(btn, {
+            backgroundColor: '#ffb947',
+            borderColor: '#ffb947',
+            color: '#161B27',
+            scale: 1.05,
+            duration: 0.3,
+            ease: 'power2.inOut'
+          }).to(btn, {
+            backgroundColor: 'rgba(255, 255, 255, 0.1)',
+            borderColor: 'rgba(255, 255, 255, 0.2)',
+            color: '#fff',
+            scale: 1,
+            duration: 0.3,
+            ease: 'power2.in',
+            delay: 0.5
+          });
         });
-      });
-    }
+      }
+    });
 
     return () => {
       lenis.destroy();
@@ -389,8 +384,8 @@ const Landing: React.FC = () => {
           <div style={{
             display: 'flex',
             alignItems: 'center',
-            marginBottom: '0.5rem',
-            gap: '1rem'
+            marginBottom: '1.5rem',
+            gap: '1.5rem'
           }}>
             <img 
               src="/Qoalation.png" 
@@ -412,7 +407,7 @@ const Landing: React.FC = () => {
           </div>
           <h1 className="general-title" style={{
             color: '#fff',
-            marginBottom: '1.5rem',
+            marginBottom: '2rem',
             textShadow: '0 2px 4px rgba(0,0,0,0.3)',
             fontSize: 'clamp(2.5rem, 5vw, 4rem)',
             lineHeight: '1.2',
@@ -433,7 +428,7 @@ const Landing: React.FC = () => {
           <p style={{
             color: '#e9e9ef',
             fontSize: 'clamp(1rem, 2vw, 1.25rem)',
-            marginBottom: '2rem',
+            marginBottom: '2.5rem',
             lineHeight: '1.6',
             textShadow: '0 1px 2px rgba(0,0,0,0.3)'
           }}>Fast, secure, and easy file conversion for all your needs</p>
@@ -777,16 +772,6 @@ const Landing: React.FC = () => {
         backgroundColor: '#161b27',
         padding: '3rem 5%'
       }}>
-        <div style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          border: '3px solid rgba(255, 255, 255, 0.2)',
-          borderRadius: '2rem',
-          pointerEvents: 'none'
-        }} />
         <div className="footer-content" style={{
           position: 'relative',
           zIndex: 1,

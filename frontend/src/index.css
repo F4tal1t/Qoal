@@ -458,5 +458,9 @@ h1, h2, h3, h4, h5, h6 {
   body {
     @apply bg-background text-foreground;
     overflow-x: hidden;
+    overflow-y: hidden;
+  }
+  body::-webkit-scrollbar {
+    display: none;
   }
 }

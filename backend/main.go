@@ -63,8 +63,12 @@ func main() {
 	// Initialize services
 	authService := services.NewAuthService(db)
 
-	// Initialize storage
-	localStorage := storage.NewLocalStorage("uploads", "processed")
+	// Initialize S3 storage
+	s3Storage, err := storage.NewS3Storage(cfg.AWSRegion, cfg.S3Bucket, cfg.AWSAccessKey, cfg.AWSSecretKey)
+	if err != nil {
+		log.Fatal("Failed to initialize S3 storage:", err)
+	}
+	log.Println("Using S3 storage")
 
 	var jobService *services.JobService
 	if redisClient != nil {
@@ -78,21 +82,15 @@ func main() {
 		jobHandler = handlers.NewJobHandler(jobService)
 	}
 
-	// Initialize upload handler with job service (only if Redis is available)
-	var uploadHandler *handlers.UploadHandler
-	if jobService != nil {
-		uploadHandler = handlers.NewUploadHandler(db, localStorage, jobService)
-	} else {
-		// Create a basic upload handler without job processing capabilities
-		uploadHandler = handlers.NewUploadHandler(db, localStorage, nil)
-	}
+	// Initialize upload handler
+	uploadHandler := handlers.NewUploadHandlerS3(db, s3Storage, jobService)
 
 	// Initialize Gin router
 	router := gin.Default()
 
 	// Configure CORS
 	router.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:3000", "http://localhost:8000"},
+		AllowOrigins:     []string{"http://localhost:5173", "http://localhost:3000", "http://localhost:8000"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
@@ -115,16 +113,22 @@ func main() {
 			protected.POST("/process", jobHandler.CreateJobHandler)
 			protected.GET("/status/:id", jobHandler.GetJobStatusHandler)
 		}
-		protected.POST("/upload", uploadHandler.UploadFile)
+		
+		protected.POST("/upload", func(c *gin.Context) {
+			uploadHandler.UploadFileS3(c, s3Storage)
+		})
+		protected.GET("/download/:id", func(c *gin.Context) {
+			uploadHandler.DownloadFileS3(c, s3Storage)
+		})
+		
 		protected.GET("/jobs", uploadHandler.GetUserJobs)
 		protected.GET("/jobs/:id", uploadHandler.GetJobStatus)
-		protected.GET("/download/:id", uploadHandler.DownloadFile)
 	}
 
-	// Start worker in background (only if Redis is available)
+	// Start S3 worker in background (only if Redis is available)
 	if jobService != nil {
 		go func() {
-			processor := worker.NewProcessor(jobService, cfg, redisClient, localStorage)
+			processor := worker.NewProcessorS3(jobService, cfg, redisClient, s3Storage)
 			processor.Start(ctx)
 		}()
 	}

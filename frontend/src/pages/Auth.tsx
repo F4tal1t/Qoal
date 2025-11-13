@@ -11,19 +11,22 @@ const Auth: React.FC = () => {
   const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const navigate = useNavigate();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setSuccess('');
     setLoading(true);
     try {
       const response = await api.auth.login(email, password);
       localStorage.setItem('token', response.token);
       localStorage.setItem('user', JSON.stringify(response.user));
-      navigate('/convert/image');
-    } catch (err: any) {
-      setError(err.message || 'Login failed');
+      setSuccess('Login successful! Redirecting...');
+      setTimeout(() => navigate('/convert'), 1500);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Login failed');
     } finally {
       setLoading(false);
     }
@@ -32,14 +35,16 @@ const Auth: React.FC = () => {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setSuccess('');
     setLoading(true);
     try {
       const response = await api.auth.register(email, password, name);
       localStorage.setItem('token', response.token);
       localStorage.setItem('user', JSON.stringify(response.user));
-      navigate('/convert/image');
-    } catch (err: any) {
-      setError(err.message || 'Registration failed');
+      setSuccess('Registration successful! Redirecting...');
+      setTimeout(() => navigate('/convert'), 1500);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Registration failed');
     } finally {
       setLoading(false);
     }
@@ -119,6 +124,7 @@ const Auth: React.FC = () => {
                 </div>
                 
                 {error && <div className="text-red-500 text-sm">{error}</div>}
+                {success && <div className="text-green-500 text-sm">{success}</div>}
                 
                 <button
                   type="submit"
@@ -191,6 +197,7 @@ const Auth: React.FC = () => {
                 </div>
                 
                 {error && <div className="text-red-500 text-sm">{error}</div>}
+                {success && <div className="text-green-500 text-sm">{success}</div>}
                 
                 <button
                   type="submit"

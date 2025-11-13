@@ -2,26 +2,22 @@ package services
 
 import (
 	"fmt"
-	"io"
 	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/qoal/file-processor/config"
 	"github.com/qoal/file-processor/models"
-	"github.com/qoal/file-processor/storage"
 	"github.com/qoal/file-processor/utils"
 )
 
 type EnhancedImageProcessor struct {
-	config       *config.Config
-	localStorage *storage.LocalStorage
+	config *config.Config
 }
 
-func NewEnhancedImageProcessor(cfg *config.Config, storage *storage.LocalStorage) *EnhancedImageProcessor {
+func NewEnhancedImageProcessor(cfg *config.Config) *EnhancedImageProcessor {
 	return &EnhancedImageProcessor{
-		config:       cfg,
-		localStorage: storage,
+		config: cfg,
 	}
 }
 
@@ -29,28 +25,8 @@ func (p *EnhancedImageProcessor) ProcessImage(job *models.ProcessingJob) error {
 	job.Status = "processing"
 	job.Progress = 10
 
-	// Download input file from storage
-	ext, err := utils.GetImageExtension(job.SourceFormat)
-	if err != nil {
-		return fmt.Errorf("failed to get image extension: %w", err)
-	}
-	inputFile := filepath.Join(p.config.TempDir, job.JobID+"_input"+ext)
-	inputFileObj, err := p.localStorage.GetFile(job.InputPath)
-	if err != nil {
-		return fmt.Errorf("failed to get input file: %w", err)
-	}
-	defer inputFileObj.Close()
-
-	// Copy file to temp location
-	out, err := os.Create(inputFile)
-	if err != nil {
-		return fmt.Errorf("failed to create temp file: %w", err)
-	}
-	defer out.Close()
-
-	if _, err := io.Copy(out, inputFileObj); err != nil {
-		return fmt.Errorf("failed to copy image file: %w", err)
-	}
+	// Input file is already downloaded from S3 to temp by processor_s3
+	inputFile := job.InputPath
 
 	job.Progress = 30
 
@@ -62,36 +38,15 @@ func (p *EnhancedImageProcessor) ProcessImage(job *models.ProcessingJob) error {
 
 	job.Progress = 80
 
-	// Save result to storage
-	// Create output filename with job ID and target format
-	outputFilename := fmt.Sprintf("converted_%s.%s", job.JobID, job.TargetFormat)
-
-	// Open output file for reading
-	outFile, err := os.Open(outputFile)
-	if err != nil {
-		return fmt.Errorf("failed to open output file: %w", err)
-	}
-	defer outFile.Close()
-
-	// Get file info for size
-	fileInfo, err := outFile.Stat()
-	if err != nil {
-		return fmt.Errorf("failed to get file info: %w", err)
-	}
-
-	// Save to processed directory using the local storage
-	outputPath, err := p.localStorage.SaveFile(outFile, outputFilename, fileInfo.Size())
-	if err != nil {
-		return fmt.Errorf("failed to save result: %w", err)
-	}
-
-	job.OutputPath = outputPath
+	// Set output path (will be uploaded by S3 processor if needed)
+	job.OutputPath = outputFile
 	job.Status = "completed"
 	job.Progress = 100
 
-	// Cleanup
-	os.Remove(inputFile)
-	os.Remove(outputFile)
+	// Cleanup input only (output will be cleaned by S3 processor)
+	if inputFile != job.InputPath {
+		os.Remove(inputFile)
+	}
 
 	return nil
 }
@@ -101,6 +56,9 @@ func (p *EnhancedImageProcessor) executeImageConversion(inputFile string, job *m
 	if err != nil {
 		return "", fmt.Errorf("failed to get target extension: %w", err)
 	}
+
+	// Ensure output directory exists
+	os.MkdirAll(p.config.OutputDir, 0755)
 	outputFile := filepath.Join(p.config.OutputDir, job.JobID+"_output"+ext)
 
 	conversionType := strings.ToUpper(job.SourceFormat) + "_TO_" + strings.ToUpper(job.TargetFormat)

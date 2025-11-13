@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { api } from '../services/api';
-import type { JobResponse } from '../services/api';
+import type { JobResponse, JobStatus } from '../services/api';
 import { Upload } from '../components/animate-ui/icons/upload';
 import { Paperclip } from '../components/animate-ui/icons/paperclip';
 import { LoaderPinwheel } from '../components/animate-ui/icons/loader-pinwheel';
@@ -19,24 +19,16 @@ const Convert: React.FC = () => {
   const [error, setError] = useState('');
   const [isDragging, setIsDragging] = useState(false);
   const [conversionResult, setConversionResult] = useState<JobResponse | null>(null);
+  const [jobStatus, setJobStatus] = useState<JobStatus | null>(null);
+  const pollTimerRef = useRef<number | null>(null);
   
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const userName = user.name || 'User';
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setSelectedFile(file);
-      
-      if (file.type.startsWith('image/')) {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          setFilePreview(reader.result as string);
-        };
-        reader.readAsDataURL(file);
-      } else {
-        setFilePreview(null);
-      }
+      setSelectedFile(e.target.files[0]);
+      setFilePreview(null);
     }
   };
 
@@ -81,18 +73,17 @@ const Convert: React.FC = () => {
       
       setError('');
       setSelectedFile(file);
-      
-      if (file.type.startsWith('image/')) {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          setFilePreview(reader.result as string);
-        };
-        reader.readAsDataURL(file);
-      } else {
-        setFilePreview(null);
-      }
+      setFilePreview(null);
     }
   };
+
+  useEffect(() => {
+    return () => {
+      if (pollTimerRef.current) {
+        clearInterval(pollTimerRef.current);
+      }
+    };
+  }, []);
 
   const handleConvert = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -101,21 +92,61 @@ const Convert: React.FC = () => {
     setIsConverting(true);
     setError('');
     setConversionResult(null);
+    setJobStatus(null);
 
     try {
       const response = await api.jobs.upload(selectedFile, targetFormat);
+      console.log('Upload response:', response);
       setConversionResult(response);
-      setIsConverting(false);
+      
+      // Start polling immediately
+      if (response.job_id) {
+        startPolling(response.job_id);
+      }
     } catch (err) {
+      console.error('Upload error:', err);
       setError(err instanceof Error ? err.message : 'Conversion failed');
       setIsConverting(false);
     }
   };
 
+  const startPolling = (jobId: string) => {
+    if (pollTimerRef.current) {
+      clearInterval(pollTimerRef.current);
+    }
+    
+    const poll = () => {
+      api.jobs.getStatus(jobId)
+        .then(status => {
+          console.log('Status:', status.status);
+          setJobStatus(prev => {
+            if (prev?.status !== status.status) {
+              return status;
+            }
+            return prev;
+          });
+          
+          if (status.status === 'completed' || status.status === 'failed') {
+            setIsConverting(false);
+            if (pollTimerRef.current) {
+              clearInterval(pollTimerRef.current);
+              pollTimerRef.current = null;
+            }
+          }
+        })
+        .catch(err => console.error('Poll error:', err));
+    };
+
+    poll();
+    pollTimerRef.current = window.setInterval(poll, 2000);
+    console.log('Polling started, timer ID:', pollTimerRef.current);
+  };
+
   const handleDownload = async () => {
-    if (conversionResult?.job_id) {
+    if (jobStatus?.job_id && jobStatus.status === 'completed') {
       try {
-        await api.jobs.download(conversionResult.job_id);
+        const filename = `converted_${jobStatus.original_filename.split('.')[0]}.${jobStatus.target_format}`;
+        await api.jobs.download(jobStatus.job_id, filename);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Download failed');
       }
@@ -123,11 +154,17 @@ const Convert: React.FC = () => {
   };
 
   const handleReset = () => {
+    if (pollTimerRef.current) {
+      clearInterval(pollTimerRef.current);
+      pollTimerRef.current = null;
+    }
     setSelectedFile(null);
     setFilePreview(null);
     setTargetFormat('');
     setConversionResult(null);
+    setJobStatus(null);
     setError('');
+    setIsConverting(false);
   };
 
   const formats: Record<ConversionType, string[]> = {
@@ -266,37 +303,52 @@ const Convert: React.FC = () => {
                 </div>
               )}
 
-              {conversionResult ? (
+              {conversionResult && (
                 <div className="mt-6 p-6 rounded-lg" style={{
-                  background: 'rgba(0, 255, 0, 0.1)',
-                  border: '1px solid rgba(0, 255, 0, 0.3)'
+                  background: jobStatus?.status === 'completed' ? 'rgba(0, 255, 0, 0.1)' : 'rgba(255, 165, 0, 0.1)',
+                  border: jobStatus?.status === 'completed' ? '1px solid rgba(0, 255, 0, 0.3)' : '1px solid rgba(255, 165, 0, 0.3)'
                 }}>
-                  <div className="flex items-center gap-3 mb-4">
-                    <CircleCheckBig size={32} animate className="text-green-500" />
-                    <h3 className="text-lg font-semibold" style={{ color: 'var(--color-text)' }}>Conversion Successful!</h3>
-                  </div>
-                  <div className="space-y-2 mb-4" style={{ color: 'var(--color-text)', opacity: 0.8 }}>
-                    <p>File: {conversionResult.original_filename}</p>
-                    <p>Format: {conversionResult.source_format.toUpperCase()} → {conversionResult.target_format.toUpperCase()}</p>
-                    <p>Status: {conversionResult.status}</p>
-                  </div>
-                  <div className="flex gap-3">
-                    <button
-                      onClick={handleDownload}
-                      className="flex-1 py-2 rounded-md font-medium bg-[#E08A00] text-white"
-                    >
-                      Download
-                    </button>
-                    <button
-                      onClick={handleReset}
-                      className="flex-1 py-2 rounded-md font-medium text-white"
-                      style={{ background: 'rgba(255, 255, 255, 0.1)' }}
-                    >
-                      Convert Another
-                    </button>
-                  </div>
+                  {jobStatus?.status === 'failed' ? (
+                    <>
+                      <div className="flex items-center gap-3 mb-4">
+                        <MessageSquareWarning size={32} className="text-red-500" />
+                        <h3 className="text-lg font-semibold" style={{ color: 'var(--color-text)' }}>Conversion Failed</h3>
+                      </div>
+                      <p className="text-red-500 mb-4">{jobStatus.error || 'Unknown error'}</p>
+                      <button type="button" onClick={handleReset} className="w-full py-2 rounded-md font-medium text-white" style={{ background: 'rgba(255, 255, 255, 0.1)' }}>Try Again</button>
+                    </>
+                  ) : jobStatus?.status === 'completed' ? (
+                    <>
+                      <div className="flex items-center gap-3 mb-4">
+                        <CircleCheckBig size={32} animate className="text-green-500" />
+                        <h3 className="text-lg font-semibold" style={{ color: 'var(--color-text)' }}>Conversion Complete!</h3>
+                      </div>
+                      <div className="space-y-2 mb-4" style={{ color: 'var(--color-text)', opacity: 0.8 }}>
+                        <p>File: {jobStatus.original_filename}</p>
+                        <p>Format: {jobStatus.source_format.toUpperCase()} → {jobStatus.target_format.toUpperCase()}</p>
+                      </div>
+                      <div className="flex gap-3">
+                        <button type="button" onClick={handleDownload} className="flex-1 py-2 rounded-md font-medium bg-[#E08A00] text-white">Download</button>
+                        <button type="button" onClick={handleReset} className="flex-1 py-2 rounded-md font-medium text-white" style={{ background: 'rgba(255, 255, 255, 0.1)' }}>Convert Another</button>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
+                        <h3 className="text-lg font-semibold" style={{ color: 'var(--color-text)' }}>Processing...</h3>
+                      </div>
+                      <div className="space-y-2" style={{ color: 'var(--color-text)', opacity: 0.8 }}>
+                        <p>File: {conversionResult.original_filename}</p>
+                        <p>Format: {conversionResult.source_format.toUpperCase()} → {conversionResult.target_format.toUpperCase()}</p>
+                        <p>Status: {jobStatus?.status || 'pending'}</p>
+                      </div>
+                    </>
+                  )}
                 </div>
-              ) : (
+              )}
+              
+              {!conversionResult && (
                 <div className="flex justify-center mt-6">
                   <button
                     type="submit"
@@ -306,7 +358,7 @@ const Convert: React.FC = () => {
                   >
                     {isConverting ? (
                       <>
-                        <LoaderPinwheel size={20} animate loop />
+                        <LoaderPinwheel size={20} loop/>
                         Converting...
                       </>
                     ) : (

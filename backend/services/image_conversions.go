@@ -15,6 +15,7 @@ import (
 	"github.com/qoal/file-processor/utils"
 	"golang.org/x/image/bmp"
 	"golang.org/x/image/tiff"
+	"golang.org/x/image/webp"
 )
 
 // decodeImage decodes an image file supporting multiple formats
@@ -44,6 +45,9 @@ func (p *EnhancedImageProcessor) decodeImage(inputFile string) (image.Image, str
 	case ".tiff", ".tif":
 		img, err := tiff.Decode(input)
 		return img, "tiff", err
+	case ".webp":
+		img, err := webp.Decode(input)
+		return img, "webp", err
 	default:
 		// Try to decode with default image.Decode
 		img, format, err := image.Decode(input)
@@ -384,6 +388,9 @@ func (p *EnhancedImageProcessor) genericImageConversion(inputFile, outputFile st
 		err = bmp.Encode(output, img)
 	case ".tiff", ".tif":
 		err = tiff.Encode(output, img, nil)
+	case ".webp":
+		// WebP encoding requires saving via imaging library
+		err = imaging.Save(img, outputFile)
 	default:
 		// Try to use the original format if possible
 		switch format {

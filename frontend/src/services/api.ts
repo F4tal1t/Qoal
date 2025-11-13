@@ -18,10 +18,31 @@ export interface JobResponse {
   created_at: string;
 }
 
+export interface JobStatus {
+  job_id: string;
+  status: string;
+  original_filename: string;
+  file_size: number;
+  source_format: string;
+  target_format: string;
+  error?: string;
+  download_url?: string;
+}
+
 const getToken = () => localStorage.getItem('token');
 
 export const api = {
   auth: {
+    register: async (email: string, password: string, name: string): Promise<AuthResponse> => {
+      const res = await fetch(`${API_BASE}/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, name }),
+      });
+      if (!res.ok) throw new Error(await res.text());
+      return res.json();
+    },
+
     login: async (email: string, password: string): Promise<AuthResponse> => {
       const res = await fetch(`${API_BASE}/auth/login`, {
         method: 'POST',
@@ -49,16 +70,33 @@ export const api = {
       return res.json();
     },
 
-    download: async (jobId: string) => {
+    getStatus: async (jobId: string): Promise<JobStatus> => {
+      const res = await fetch(`${API_BASE}/jobs/${jobId}`, {
+        headers: { Authorization: `Bearer ${getToken()}` },
+      });
+      if (!res.ok) throw new Error('Failed to get job status');
+      return res.json();
+    },
+
+    download: async (jobId: string, filename: string) => {
       const res = await fetch(`${API_BASE}/download/${jobId}`, {
         headers: { Authorization: `Bearer ${getToken()}` },
       });
       if (!res.ok) throw new Error('Download failed');
-      const blob = await res.blob();
+      const data = await res.json();
+      
+      if (!data.download_url) throw new Error('No download URL provided');
+      
+      // Fetch file from S3 as blob
+      const fileRes = await fetch(data.download_url);
+      if (!fileRes.ok) throw new Error('Failed to fetch file');
+      const blob = await fileRes.blob();
+      
+      // Trigger download
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `converted_${jobId}`;
+      a.download = filename;
       a.click();
       window.URL.revokeObjectURL(url);
     },

@@ -3,6 +3,9 @@ module github.com/qoal/file-processor
 go 1.24.10
 
 require (
+
+	// AWS SDK for S3 storage
+	github.com/aws/aws-sdk-go v1.55.5
 	// ===========================================
 	// IMAGE CONVERSION LIBRARIES
 	// ===========================================
@@ -47,7 +50,6 @@ require (
 )
 
 require (
-
 	// ===========================================
 	// ARCHIVE SUPPORT LIBRARIES
 	// ===========================================
@@ -155,3 +157,5 @@ require (
 	// YAML configuration support
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
+
+require github.com/jmespath/go-jmespath v0.4.0 // indirect

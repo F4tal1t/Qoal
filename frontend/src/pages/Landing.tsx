@@ -250,7 +250,7 @@ const Landing: React.FC = () => {
             color: '#161B27',
             scale: 1.05,
             duration: 0.3,
-            ease: 'power2.inOut'
+            ease: 'circ.inOut'
           }).to(btn, {
             backgroundColor: 'rgba(255, 255, 255, 0.1)',
             borderColor: 'rgba(255, 255, 255, 0.2)',

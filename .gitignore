@@ -13,6 +13,7 @@ backend_api\.env.template
 plan.json
 *.plan
 planning/
+processed/
 
 # Database
 *.db

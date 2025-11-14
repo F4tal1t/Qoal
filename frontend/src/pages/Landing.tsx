@@ -128,6 +128,7 @@ const Landing: React.FC = () => {
           start: 'top 95%',
           end: '10% 10%',
           scrub: true,
+          markers: true,
           onUpdate: () => renderer.render(scene, camera)
         }
       });
@@ -554,7 +555,7 @@ const Landing: React.FC = () => {
               Convert documents seamlessly between formats. Perfect for office work and document management.
             </p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', justifyContent: 'flex-end', marginBottom: '2rem' }}>
-              {['PDF', 'DOCX', 'TXT', 'RTF', 'ODT'].map(format => (
+              {['PDF', 'DOCX', 'TXT', 'XLSX', 'CSV'].map(format => (
                 <div
                   key={format}
                   className="format-btn"
@@ -737,7 +738,7 @@ const Landing: React.FC = () => {
               Compress and convert archives with ease. Support for all major compression formats.
             </p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', justifyContent: 'flex-end', marginBottom: '2rem' }}>
-              {['ZIP', 'RAR', '7Z', 'TAR', 'GZ'].map(format => (
+              {['ZIP', 'RAR', 'TAR.GZ'].map(format => (
                 <div
                   key={format}
                   className="format-btn"

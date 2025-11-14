@@ -19,7 +19,7 @@ import (
 )
 
 const (
-	MaxFileSize = 100 * 1024 * 1024 // 100MB
+	MaxFileSize = 30 * 1024 * 1024 // 30MB
 )
 
 type UploadHandler struct {

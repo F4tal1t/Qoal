@@ -1,18 +1,23 @@
 FROM golang:1.21-alpine AS builder
 
 WORKDIR /app
+
 COPY go.mod go.sum ./
 RUN go mod download
 
 COPY . .
-RUN go build -o main .
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o qoal-backend .
 
 FROM alpine:latest
-RUN apk --no-cache add ca-certificates
-WORKDIR /root/
 
-COPY --from=builder /app/main .
+RUN apk add --no-cache ca-certificates
 
-EXPOSE 8080
+WORKDIR /app
 
-CMD ["./main"]
+COPY --from=builder /app/qoal-backend .
+
+RUN mkdir -p /app/temp /app/processed
+
+EXPOSE 8000
+
+CMD ["./qoal-backend"]

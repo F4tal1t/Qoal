@@ -3,10 +3,10 @@ package handlers
 import (
 	"context"
 	"fmt"
+	"io"
 	"net/http"
 	"path/filepath"
 	"strings"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -58,7 +58,7 @@ func (h *UploadHandler) UploadFileS3(c *gin.Context, s3Storage *storage.S3Storag
 	defer file.Close()
 
 	if header.Size > MaxFileSize {
-		c.JSON(http.StatusBadRequest, UploadResponse{Success: false, Message: fmt.Sprintf("File too large. Maximum size: %dMB", MaxFileSize/1024/1024)})
+		c.JSON(http.StatusBadRequest, UploadResponse{Success: false, Message: "File too large. Maximum size: 30MB"})
 		return
 	}
 
@@ -167,15 +167,16 @@ func (h *UploadHandler) DownloadFileS3(c *gin.Context, s3Storage *storage.S3Stor
 		return
 	}
 
-	presignedURL, err := s3Storage.GetPresignedURL(job.OutputPath, 15*time.Minute)
+	fileReader, err := s3Storage.GetFile(job.OutputPath)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate download URL"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve file"})
 		return
 	}
+	defer fileReader.Close()
 
-	c.JSON(http.StatusOK, gin.H{
-		"download_url": presignedURL,
-		"filename":     job.OriginalFilename,
-		"job_id":       job.JobID,
-	})
+	outputFilename := fmt.Sprintf("%s.%s", strings.TrimSuffix(job.OriginalFilename, filepath.Ext(job.OriginalFilename)), job.TargetFormat)
+	c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=%s", outputFilename))
+	c.Header("Content-Type", "application/octet-stream")
+	c.Status(http.StatusOK)
+	io.Copy(c.Writer, fileReader)
 }

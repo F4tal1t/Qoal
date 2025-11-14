@@ -52,6 +52,14 @@ export const api = {
       if (!res.ok) throw new Error('Invalid credentials');
       return res.json();
     },
+
+    getProfile: async () => {
+      const res = await fetch(`${API_BASE}/auth/profile`, {
+        headers: { Authorization: `Bearer ${getToken()}` },
+      });
+      if (!res.ok) throw new Error('Unauthorized');
+      return res.json();
+    },
   },
 
   jobs: {
@@ -82,22 +90,19 @@ export const api = {
       const res = await fetch(`${API_BASE}/download/${jobId}`, {
         headers: { Authorization: `Bearer ${getToken()}` },
       });
-      if (!res.ok) throw new Error('Download failed');
-      const data = await res.json();
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || 'Download failed');
+      }
       
-      if (!data.download_url) throw new Error('No download URL provided');
-      
-      // Fetch file from S3 as blob
-      const fileRes = await fetch(data.download_url);
-      if (!fileRes.ok) throw new Error('Failed to fetch file');
-      const blob = await fileRes.blob();
-      
-      // Trigger download
+      const blob = await res.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
       a.download = filename;
+      document.body.appendChild(a);
       a.click();
+      document.body.removeChild(a);
       window.URL.revokeObjectURL(url);
     },
   },

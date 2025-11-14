@@ -7,6 +7,7 @@ import { LoaderPinwheel } from '../components/animate-ui/icons/loader-pinwheel';
 import { CircleCheckBig } from '../components/animate-ui/icons/circle-check-big';
 import { MessageSquareWarning } from '../components/animate-ui/icons/message-square-warning';
 import { Tabs, TabsList, TabsTrigger, TabsHighlight, TabsHighlightItem } from '../components/animate-ui/components/animate/tabs';
+import { getAvailableFormats } from '../utils/conversionMap';
 
 type ConversionType = 'image' | 'document' | 'audio' | 'video' | 'archive';
 
@@ -21,14 +22,22 @@ const Convert: React.FC = () => {
   const [conversionResult, setConversionResult] = useState<JobResponse | null>(null);
   const [jobStatus, setJobStatus] = useState<JobStatus | null>(null);
   const pollTimerRef = useRef<number | null>(null);
+  const pollStartTimeRef = useRef<number | null>(null);
   
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const userName = user.name || 'User';
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setSelectedFile(e.target.files[0]);
+      const file = e.target.files[0];
+      if (file.size > 30 * 1024 * 1024) {
+        setError('File too large. Maximum size: 30MB');
+        return;
+      }
+      setSelectedFile(file);
       setFilePreview(null);
+      setTargetFormat('');
+      setError('');
     }
   };
 
@@ -47,6 +56,12 @@ const Convert: React.FC = () => {
     setIsDragging(false);
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       const file = e.dataTransfer.files[0];
+      
+      if (file.size > 30 * 1024 * 1024) {
+        setError('File too large. Maximum size: 30MB');
+        return;
+      }
+      
       const ext = '.' + file.name.split('.').pop()?.toLowerCase();
       
       const isValidType = (() => {
@@ -54,13 +69,13 @@ const Convert: React.FC = () => {
           case 'image':
             return file.type.startsWith('image/');
           case 'document':
-            return ['.pdf', '.doc', '.docx', '.txt', '.xlsx', '.csv', '.rtf', '.odt'].includes(ext);
+            return ['.pdf', '.doc', '.docx', '.txt', '.xlsx', '.csv'].includes(ext);
           case 'audio':
             return file.type.startsWith('audio/');
           case 'video':
             return file.type.startsWith('video/');
           case 'archive':
-            return ['.zip', '.rar', '.7z', '.tar', '.gz', '.bz2', '.xz'].includes(ext);
+            return ['.zip', '.rar', '.tar', '.gz', '.tgz'].includes(ext);
           default:
             return false;
         }
@@ -74,6 +89,7 @@ const Convert: React.FC = () => {
       setError('');
       setSelectedFile(file);
       setFilePreview(null);
+      setTargetFormat('');
     }
   };
 
@@ -99,13 +115,23 @@ const Convert: React.FC = () => {
       console.log('Upload response:', response);
       setConversionResult(response);
       
-      // Start polling immediately
       if (response.job_id) {
         startPolling(response.job_id);
       }
     } catch (err) {
       console.error('Upload error:', err);
-      setError(err instanceof Error ? err.message : 'Conversion failed');
+      const errorMsg = err instanceof Error ? err.message : 'Conversion failed';
+      
+      if (errorMsg.includes('401') || errorMsg.includes('Unauthorized')) {
+        setError('Session expired. Please login again.');
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        setTimeout(() => window.location.href = '/auth', 2000);
+      } else if (errorMsg.includes('Failed to fetch') || errorMsg.includes('NetworkError')) {
+        setError('Cannot connect to server. Please check if the backend is running.');
+      } else {
+        setError(errorMsg);
+      }
       setIsConverting(false);
     }
   };
@@ -115,7 +141,28 @@ const Convert: React.FC = () => {
       clearInterval(pollTimerRef.current);
     }
     
+    pollStartTimeRef.current = Date.now();
+    
     const poll = () => {
+      const elapsed = Date.now() - (pollStartTimeRef.current || 0);
+      
+      if (elapsed > 30000) {
+        if (pollTimerRef.current) {
+          clearInterval(pollTimerRef.current);
+          pollTimerRef.current = null;
+        }
+        setIsConverting(false);
+        setJobStatus({
+          job_id: jobId,
+          status: 'failed',
+          error: 'Conversion timeout - job took longer than 30 seconds',
+          original_filename: conversionResult?.original_filename || '',
+          source_format: conversionResult?.source_format || '',
+          target_format: conversionResult?.target_format || ''
+        });
+        return;
+      }
+      
       api.jobs.getStatus(jobId)
         .then(status => {
           console.log('Status:', status.status);
@@ -134,7 +181,20 @@ const Convert: React.FC = () => {
             }
           }
         })
-        .catch(err => console.error('Poll error:', err));
+        .catch(err => {
+          console.error('Poll error:', err);
+          if (err.message?.includes('401') || err.message?.includes('Unauthorized')) {
+            if (pollTimerRef.current) {
+              clearInterval(pollTimerRef.current);
+              pollTimerRef.current = null;
+            }
+            setIsConverting(false);
+            setError('Session expired. Please login again.');
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            setTimeout(() => window.location.href = '/auth', 2000);
+          }
+        });
     };
 
     poll();
@@ -167,20 +227,38 @@ const Convert: React.FC = () => {
     setIsConverting(false);
   };
 
-  const formats: Record<ConversionType, string[]> = {
-    image: ['jpg', 'png', 'webp', 'gif', 'bmp', 'tiff', 'svg'],
-    document: ['pdf', 'docx', 'txt', 'xlsx', 'csv', 'rtf', 'odt'],
-    audio: ['mp3', 'wav', 'flac', 'aac', 'ogg', 'm4a', 'wma'],
-    video: ['mp4', 'avi', 'mov', 'wmv', 'flv', 'mkv', 'webm', 'm4v'],
-    archive: ['zip', 'rar', '7z', 'tar', 'gz', 'bz2', 'xz']
+  // Get available formats based on selected file
+  const getFormatsForFile = (): string[] => {
+    if (!selectedFile) {
+      // Show all formats if no file selected
+      const allFormats: Record<ConversionType, string[]> = {
+        image: ['jpg', 'png', 'webp', 'gif', 'bmp', 'tiff'],
+        document: ['pdf', 'docx', 'txt', 'xlsx', 'csv'],
+        audio: ['mp3', 'wav', 'flac', 'ogg', 'm4a'],
+        video: ['mp4', 'avi', 'mov', 'mkv', 'webm'],
+        archive: ['zip', 'tar.gz']
+      };
+      return allFormats[activeType];
+    }
+    
+    // Get file extension
+    const ext = selectedFile.name.split('.').pop()?.toLowerCase() || '';
+    const availableFormats = getAvailableFormats(ext);
+    
+    // If no formats available, show message
+    if (availableFormats.length === 0) {
+      return [];
+    }
+    
+    return availableFormats;
   };
 
   const acceptedTypes: Record<ConversionType, string> = {
     image: 'image/*',
-    document: '.pdf,.doc,.docx,.txt,.xlsx,.csv,.rtf,.odt',
+    document: '.pdf,.doc,.docx,.txt,.xlsx,.csv',
     audio: 'audio/*',
     video: 'video/*',
-    archive: '.zip,.rar,.7z,.tar,.gz,.bz2,.xz'
+    archive: '.zip,.rar,.tar,.tar.gz,.tgz'
   };
 
   const categoryIcons: Record<ConversionType, string> = {
@@ -259,14 +337,15 @@ const Convert: React.FC = () => {
                       {filePreview && (
                         <img src={filePreview} alt="Preview" className="max-w-full max-h-48 rounded-md mb-2" />
                       )}
-                      <Paperclip size={32} animateOnHover className="text-white" />
-                      <p style={{ color: 'var(--color-text)' }}>{selectedFile.name}</p>
-                      <span style={{ color: 'var(--color-text)', opacity: 0.7 }}>{(selectedFile.size / 1024 / 1024).toFixed(2)} MB</span>
+                      <Paperclip size={32} animateOnHover className="text-[#cae2e2]" />
+                      <p style={{ color: '#cae2e2' }}>{selectedFile.name}</p>
+                      <span style={{ color: '#cae2e2', opacity: 0.7 }}>{(selectedFile.size / 1024 / 1024).toFixed(2)} MB</span>
                     </>
                   ) : (
                     <>
-                      <Upload size={48} animateOnHover className="text-white" />
-                      <p style={{ color: 'var(--color-text)' }}>Click to upload or drag and drop</p>
+                      <Upload size={48} animateOnHover className="text-[#cae2e2]" />
+                      <p style={{ color: '#cae2e2' }}>Click to upload or drag and drop</p>
+                      <p style={{ color: '#cae2e2', opacity: 0.6, fontSize: '0.875rem', marginTop: '0.5rem' }}>Max file size: 30MB</p>
                     </>
                   )}
                 </label>
@@ -274,24 +353,37 @@ const Convert: React.FC = () => {
 
               <div className="mt-4">
                 <label htmlFor="targetFormat" className="block text-sm mb-2" style={{ color: 'var(--color-text)' }}>Target Format</label>
-                <select
-                  id="targetFormat"
-                  value={targetFormat}
-                  onChange={(e) => setTargetFormat(e.target.value)}
-                  required
-                  className="w-full px-4 py-2 rounded-md border text-[#cae2e2]"
-                  style={{
-                    background: 'rgba(255, 255, 255, 0.05)',
-                    border: '1px solid rgba(255, 255, 255, 0.1)'
-                  }}
-                >
-                  <option value="" className="bg-[#161B27] text-[#cae2e2]">Select format</option>
-                  {formats[activeType].map((format) => (
-                    <option key={format} value={format} className="bg-[#161B27] text-[#cae2e2]">
-                      {format.toUpperCase()}
+                {selectedFile && getFormatsForFile().length === 0 ? (
+                  <div className="w-full px-4 py-2 rounded-md border text-red-400" style={{
+                    background: 'rgba(255, 0, 0, 0.1)',
+                    border: '1px solid rgba(255, 0, 0, 0.3)'
+                  }}>
+                    No conversions available for this file format
+                  </div>
+                ) : (
+                  <select
+                    id="targetFormat"
+                    value={targetFormat}
+                    onChange={(e) => setTargetFormat(e.target.value)}
+                    required
+                    disabled={!selectedFile}
+                    className="w-full px-4 py-2 rounded-md border text-[#cae2e2]"
+                    style={{
+                      background: 'rgba(255, 255, 255, 0.05)',
+                      border: '1px solid rgba(255, 255, 255, 0.1)',
+                      opacity: !selectedFile ? 0.5 : 1
+                    }}
+                  >
+                    <option value="" className="bg-[#161B27] text-[#cae2e2]">
+                      {selectedFile ? 'Select target format' : 'Upload a file first'}
                     </option>
-                  ))}
-                </select>
+                    {getFormatsForFile().map((format) => (
+                      <option key={format} value={format} className="bg-[#161B27] text-[#cae2e2]">
+                        {format.toUpperCase()}
+                      </option>
+                    ))}
+                  </select>
+                )}
               </div>
 
               <div className="flex-1" />
@@ -321,9 +413,9 @@ const Convert: React.FC = () => {
                     <>
                       <div className="flex items-center gap-3 mb-4">
                         <CircleCheckBig size={32} animate className="text-green-500" />
-                        <h3 className="text-lg font-semibold" style={{ color: 'var(--color-text)' }}>Conversion Complete!</h3>
+                        <h3 className="text-lg font-semibold" style={{ color: '#cae2e2' }}>Conversion Complete!</h3>
                       </div>
-                      <div className="space-y-2 mb-4" style={{ color: 'var(--color-text)', opacity: 0.8 }}>
+                      <div className="space-y-2 mb-4" style={{ color: '#cae2e2', opacity: 0.8 }}>
                         <p>File: {jobStatus.original_filename}</p>
                         <p>Format: {jobStatus.source_format.toUpperCase()} → {jobStatus.target_format.toUpperCase()}</p>
                       </div>
@@ -335,10 +427,10 @@ const Convert: React.FC = () => {
                   ) : (
                     <>
                       <div className="flex items-center gap-3 mb-4">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
-                        <h3 className="text-lg font-semibold" style={{ color: 'var(--color-text)' }}>Processing...</h3>
+                        <LoaderPinwheel size={32} animate loop className="text-[#cae2e2]" />
+                        <h3 className="text-lg font-semibold" style={{ color: '#cae2e2' }}>Processing...</h3>
                       </div>
-                      <div className="space-y-2" style={{ color: 'var(--color-text)', opacity: 0.8 }}>
+                      <div className="space-y-2" style={{ color: '#cae2e2', opacity: 0.8 }}>
                         <p>File: {conversionResult.original_filename}</p>
                         <p>Format: {conversionResult.source_format.toUpperCase()} → {conversionResult.target_format.toUpperCase()}</p>
                         <p>Status: {jobStatus?.status || 'pending'}</p>
@@ -358,7 +450,7 @@ const Convert: React.FC = () => {
                   >
                     {isConverting ? (
                       <>
-                        <LoaderPinwheel size={20} loop/>
+                        <LoaderPinwheel size={20} animate loop className="text-[#cae2e2]" />
                         Converting...
                       </>
                     ) : (

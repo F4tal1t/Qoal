@@ -157,6 +157,7 @@ const Convert: React.FC = () => {
           status: 'failed',
           error: 'Conversion timeout - job took longer than 30 seconds',
           original_filename: conversionResult?.original_filename || '',
+          file_size: conversionResult?.file_size || 0,
           source_format: conversionResult?.source_format || '',
           target_format: conversionResult?.target_format || ''
         });

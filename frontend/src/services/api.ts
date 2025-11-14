@@ -1,4 +1,4 @@
-const API_BASE = 'https://qoal-backend.onrender.com/api';
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 
 interface AuthResponse {
   token: string;

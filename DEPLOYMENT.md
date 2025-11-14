@@ -5,7 +5,7 @@
 1. **Fly.io Account**: Sign up at https://fly.io
 2. **GitHub Repository**: Push code to GitHub
 3. **AWS S3 Bucket**: For file storage (qoala bucket)
-4. **Fly.io Redis**: Free tier included with Fly.io
+4. **Upstash Redis**: Free tier at https://upstash.com
 
 ---
 
@@ -57,9 +57,9 @@ This automatically sets `DATABASE_URL` secret.
 # JWT Secret
 flyctl secrets set JWT_SECRET=$(openssl rand -base64 32) -a qoal-converter
 
-# Redis (Fly.io free tier)
-flyctl redis create --name qoal-redis -a qoal-converter
-# This automatically sets REDIS_URL secret
+# Redis (Upstash free tier)
+# Go to upstash.com, create Redis, copy URL
+flyctl secrets set REDIS_URL="redis://default:your-password@your-endpoint.upstash.io:6379" -a qoal-converter
 
 # AWS S3 Credentials
 flyctl secrets set AWS_REGION="us-east-1" -a qoal-converter
@@ -206,7 +206,7 @@ flyctl ssh console -a qoal-converter
 | Fly.io VM (256MB) | Free | $0 |
 | Fly.io Volume (3GB) | Free | $0 |
 | Fly.io Postgres (1GB) | Free | $0 |
-| Fly.io Redis | Free | $0 |
+| Upstash Redis | Free | $0 |
 | AWS S3 (with lifecycle) | Pay-as-you-go | ~$0.50/month |
 | Vercel/Netlify Frontend | Free | $0 |
 | **Total** | | **~$0.50/month** |

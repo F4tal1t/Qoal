@@ -10,7 +10,7 @@ const Navbar: React.FC<NavbarProps> = () => {
       position: 'fixed',
       top: '1rem',
       left: '50%',
-      transform: 'translateX(-50%)',
+      transform: 'translateX(-50%) scale(0.8)',
       zIndex: 10,
       backgroundColor: '#161b27',
       borderRadius: '1rem',

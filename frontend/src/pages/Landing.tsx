@@ -128,7 +128,6 @@ const Landing: React.FC = () => {
           start: 'top 95%',
           end: '10% 10%',
           scrub: true,
-          markers: true,
           onUpdate: () => renderer.render(scene, camera)
         }
       });
@@ -151,8 +150,8 @@ const Landing: React.FC = () => {
         ease: 'power1.inOut',
         scrollTrigger: {
           trigger: '.archive-conversions',
-          start: 'top center',
-          end: 'bottom center',
+          start: '30% center',
+          end: '70% 40%',
           scrub: true,
           onUpdate: () => renderer.render(scene, camera)
         }
@@ -160,7 +159,7 @@ const Landing: React.FC = () => {
 
       // Z-axis loop animation (runs independently)
       gsap.to(model.position, {
-        z: 0.1,
+        z: 0.15,
         duration: 1,
         ease: 'sine.inOut',
         yoyo: true,
@@ -197,7 +196,7 @@ const Landing: React.FC = () => {
             x: '400%',
             y: '0%',
             opacity: 1,
-            ease: 'power2.inOut',
+            ease: 'circ.inOut',
             scrollTrigger: {
               trigger,
               start: '20% 40%',
@@ -239,27 +238,25 @@ const Landing: React.FC = () => {
       });
     });
 
-    // Format buttons hover loop animation per section
+    // Format buttons sequential animation
     sections.forEach(section => {
       const sectionButtons = document.querySelectorAll(`.${section}-conversions .format-btn`);
       if (sectionButtons.length > 0) {
-        const loopTl = gsap.timeline({ repeat: -1 });
+        const tl = gsap.timeline({ repeat: -1 });
         sectionButtons.forEach((btn) => {
-          loopTl.to(btn, {
+          tl.to(btn, {
             backgroundColor: '#ffb947',
             borderColor: '#ffb947',
             color: '#161B27',
-            scale: 1.05,
             duration: 0.3,
             ease: 'circ.inOut'
           }).to(btn, {
             backgroundColor: 'rgba(255, 255, 255, 0.1)',
             borderColor: 'rgba(255, 255, 255, 0.2)',
             color: '#fff',
-            scale: 1,
             duration: 0.3,
-            ease: 'power2.in',
-            delay: 0.5
+            delay: 0.7,
+            ease: 'power2.in'
           });
         });
       }
@@ -294,7 +291,7 @@ const Landing: React.FC = () => {
         }
       `}</style>
       
-      {/* Custom Scroll Progress Indicator */}
+    
       <div className="scroll-progress" style={{
         position: 'fixed',
         right: '2rem',
@@ -311,9 +308,9 @@ const Landing: React.FC = () => {
             key={section}
             className={`scroll-dot scroll-dot-${index}`}
             style={{
-              width: '12px',
-              height: '12px',
-              borderRadius: '50%',
+              width: '9px',
+              height: '9px',
+              borderRadius: '40%',
               backgroundColor: 'rgba(255, 255, 255, 0.3)',
               border: '2px solid rgba(255, 255, 255, 0.5)',
               cursor: 'pointer',
@@ -333,7 +330,7 @@ const Landing: React.FC = () => {
               top: '50%',
               transform: 'translateY(-50%)',
               whiteSpace: 'nowrap',
-              fontSize: '0.875rem',
+              fontSize: '0.65625rem',
               color: '#fff',
               opacity: 0,
               transition: 'opacity 0.3s ease',
@@ -342,7 +339,6 @@ const Landing: React.FC = () => {
           </div>
         ))}
       </div>
-      {/* Common Background for all sections */}
       <div className="halftone-bg" style={{ 
         position: 'fixed', 
         top: 0, 
@@ -366,35 +362,31 @@ const Landing: React.FC = () => {
         }} />
       </div>
 
-      {/* Hero Section */}
       <section className="hero-section" style={{ height: '100vh', position: 'relative', overflow: 'hidden' }}>
-        {/* Transparent Navigation Bar */}
         <Navbar/>
-        {/* Hero Content - Positioned on the left side */}
         <div className="hero-content" style={{ 
           position: 'absolute', 
           zIndex: 5,
           top: '50%',
           left: '5%',
           transform: 'translateY(-50%)',
-          maxWidth: '600px',
+          maxWidth: '500px',
           textAlign: 'left',
-          padding: '0 1rem'
+          padding: '0 0.5rem'
         }}>
-          {/* Qoal Logo and Text */}
           <div style={{
             display: 'flex',
             alignItems: 'center',
-            marginBottom: '1.5rem',
-            gap: '1.5rem'
+            marginBottom: '0.5rem',
+            gap: '1rem'
           }}>
             <img 
               src="/Qoalation.png" 
               alt="Qoal Logo" 
               loading="eager"
               style={{
-                width: '100px',
-                height: '100px',
+                width: '75px',
+                height: '75px',
                 objectFit: 'contain',
                 display: 'block'
               }}
@@ -404,7 +396,7 @@ const Landing: React.FC = () => {
               alt="Qoal Text" 
               loading="eager"
               style={{
-                height: '40px',
+                height: '30px',
                 objectFit: 'contain',
                 display: 'block'
               }}
@@ -412,13 +404,13 @@ const Landing: React.FC = () => {
           </div>
           <h1 className="general-title" style={{
             color: '#fff',
-            marginBottom: '1rem',
+            marginBottom: '0.5rem',
             textShadow: '0 2px 4px rgba(0,0,0,0.3)',
-            fontSize: 'clamp(2.5rem, 5vw, 4rem)',
+            fontSize: 'clamp(1.875rem, 3.75vw, 3rem)',
             lineHeight: '1.2',
             fontWeight: 500
           }}>Convert Your</h1>
-          <div style={{ marginBottom: '2rem', fontFamily: 'Poppins', fontSize: 'clamp(2.5rem, 5vw, 4rem)', fontWeight: 500 }}>
+          <div style={{ marginBottom: '1rem', fontFamily: 'Poppins', fontSize: 'clamp(1.875rem, 3.75vw, 3rem)', fontWeight: 500 }}>
             <RotatingText
               texts={['Image', 'Video', 'Archive', 'Document', 'Audio']}
               mainClassName="inline-flex px-2 sm:px-2 md:px-3 bg-[#ffb947] text-black overflow-hidden py-1 sm:py-1 md:py-1 rounded-lg"
@@ -434,8 +426,8 @@ const Landing: React.FC = () => {
           </div>
           <p style={{
             color: '#e9e9ef',
-            fontSize: 'clamp(1rem, 2vw, 1.25rem)',
-            marginBottom: '2.5rem',
+            fontSize: 'clamp(0.75rem, 1.5vw, 0.9375rem)',
+            marginBottom: '1rem',
             lineHeight: '1.6',
             textShadow: '0 1px 2px rgba(0,0,0,0.3)'
           }}>Fast, secure, and easy file conversion for all your needs</p>
@@ -443,17 +435,19 @@ const Landing: React.FC = () => {
             className="get-started-btn" 
             onClick={handleGetStarted}
             style={{
-              backgroundColor: '#ff785a',
-              color: 'white',
+              backgroundColor: '#ffb947',
+              color: '#161B27',
               border: 'none',
-              padding: '1rem 2rem',
-              fontSize: 'clamp(1rem, 1.5vw, 1.1rem)',
+              padding: '0.75rem 1.5rem',
+              fontSize: 'clamp(0.75rem, 1.125vw, 0.825rem)',
               fontWeight: '600',
               borderRadius: '0.5rem',
               cursor: 'pointer',
               transition: 'all 0.3s ease',
               boxShadow: '0 4px 12px rgba(255, 120, 90, 0.3)'
             }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#feab25'}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#ffb947'}
           >
             Get Started
           </button>
@@ -480,16 +474,16 @@ const Landing: React.FC = () => {
             style={{
               position: 'absolute',
               left: '5%',
-              width: '25%',
+              width: '18.75%',
               height: 'auto',
-              maxWidth: '200px',
+              maxWidth: '150px',
               zIndex: 5,
               opacity: 0
             }}
           />
-          <div style={{ textAlign: 'right', maxWidth: '600px' }}>
-            <h2 style={{ fontSize: '3rem', marginBottom: '1rem', color: '#fff' }}>Image Conversions</h2>
-            <p style={{ fontSize: '1.25rem', marginBottom: '2rem', color: '#e9e9ef' }}>
+          <div style={{ textAlign: 'right', maxWidth: '500px' }}>
+            <h2 style={{ fontSize: '2.25rem', marginBottom: '1rem', color: '#fff' }}>Image Conversions</h2>
+            <p style={{ fontSize: '0.9375rem', marginBottom: '2rem', color: '#e9e9ef' }}>
               Transform your images between popular formats with ease. Maintain quality while optimizing file size.
             </p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', justifyContent: 'flex-end', marginBottom: '2rem' }}>
@@ -498,11 +492,11 @@ const Landing: React.FC = () => {
                   key={format}
                   className="format-btn"
                   style={{
-                    padding: '0.75rem 1.5rem',
+                    padding: '0.5625rem 1.125rem',
                     backgroundColor: 'rgba(255, 255, 255, 0.1)',
                     color: '#fff',
                     borderRadius: '0.5rem',
-                    fontSize: '1rem',
+                    fontSize: '0.75rem',
                     fontWeight: '600',
                     cursor: 'pointer',
                     transition: 'all 0.3s ease',
@@ -542,16 +536,16 @@ const Landing: React.FC = () => {
             style={{
               position: 'absolute',
               left: '5%',
-              width: '25%',
+              width: '18.75%',
               height: 'auto',
-              maxWidth: '200px',
+              maxWidth: '150px',
               zIndex: 5,
               opacity: 0
             }}
           />
-          <div style={{ textAlign: 'right', maxWidth: '600px' }}>
-            <h2 style={{ fontSize: '3rem', marginBottom: '1rem', color: '#fff' }}>Document Conversions</h2>
-            <p style={{ fontSize: '1.25rem', marginBottom: '2rem', color: '#e9e9ef' }}>
+          <div style={{ textAlign: 'right', maxWidth: '500px' }}>
+            <h2 style={{ fontSize: '2.25rem', marginBottom: '1rem', color: '#fff' }}>Document Conversions</h2>
+            <p style={{ fontSize: '0.9375rem', marginBottom: '2rem', color: '#e9e9ef' }}>
               Convert documents seamlessly between formats. Perfect for office work and document management.
             </p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', justifyContent: 'flex-end', marginBottom: '2rem' }}>
@@ -560,11 +554,11 @@ const Landing: React.FC = () => {
                   key={format}
                   className="format-btn"
                   style={{
-                    padding: '0.75rem 1.5rem',
+                    padding: '0.5625rem 1.125rem',
                     backgroundColor: 'rgba(255, 255, 255, 0.1)',
                     color: '#fff',
                     borderRadius: '0.5rem',
-                    fontSize: '1rem',
+                    fontSize: '0.75rem',
                     fontWeight: '600',
                     cursor: 'pointer',
                     transition: 'all 0.3s ease',
@@ -603,16 +597,16 @@ const Landing: React.FC = () => {
             style={{
               position: 'absolute',
               left: '5%',
-              width: '25%',
+              width: '18.75%',
               height: 'auto',
-              maxWidth: '200px',
+              maxWidth: '150px',
               zIndex: 5,
               opacity: 0
             }}
           />
-          <div style={{ textAlign: 'right', maxWidth: '600px' }}>
-            <h2 style={{ fontSize: '3rem', marginBottom: '1rem', color: '#fff' }}>Audio Conversions</h2>
-            <p style={{ fontSize: '1.25rem', marginBottom: '2rem', color: '#e9e9ef' }}>
+          <div style={{ textAlign: 'right', maxWidth: '500px' }}>
+            <h2 style={{ fontSize: '2.25rem', marginBottom: '1rem', color: '#fff' }}>Audio Conversions</h2>
+            <p style={{ fontSize: '0.9375rem', marginBottom: '2rem', color: '#e9e9ef' }}>
               Convert audio files to your preferred format. Maintain sound quality across all conversions.
             </p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', justifyContent: 'flex-end', marginBottom: '2rem' }}>
@@ -621,11 +615,11 @@ const Landing: React.FC = () => {
                   key={format}
                   className="format-btn"
                   style={{
-                    padding: '0.75rem 1.5rem',
+                    padding: '0.5625rem 1.125rem',
                     backgroundColor: 'rgba(255, 255, 255, 0.1)',
                     color: '#fff',
                     borderRadius: '0.5rem',
-                    fontSize: '1rem',
+                    fontSize: '0.75rem',
                     fontWeight: '600',
                     cursor: 'pointer',
                     transition: 'all 0.3s ease',
@@ -664,16 +658,16 @@ const Landing: React.FC = () => {
             style={{
               position: 'absolute',
               left: '5%',
-              width: '25%',
+              width: '18.75%',
               height: 'auto',
-              maxWidth: '200px',
+              maxWidth: '150px',
               zIndex: 5,
               opacity: 0
             }}
           />
-          <div style={{ textAlign: 'right', maxWidth: '600px' }}>
-            <h2 style={{ fontSize: '3rem', marginBottom: '1rem', color: '#fff' }}>Video Conversions</h2>
-            <p style={{ fontSize: '1.25rem', marginBottom: '2rem', color: '#e9e9ef' }}>
+          <div style={{ textAlign: 'right', maxWidth: '500px' }}>
+            <h2 style={{ fontSize: '2.25rem', marginBottom: '1rem', color: '#fff' }}>Video Conversions</h2>
+            <p style={{ fontSize: '0.9375rem', marginBottom: '2rem', color: '#e9e9ef' }}>
               Transform videos between formats effortlessly. Optimize for web, mobile, or desktop playback.
             </p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', justifyContent: 'flex-end', marginBottom: '2rem' }}>
@@ -682,11 +676,11 @@ const Landing: React.FC = () => {
                   key={format}
                   className="format-btn"
                   style={{
-                    padding: '0.75rem 1.5rem',
+                    padding: '0.5625rem 1.125rem',
                     backgroundColor: 'rgba(255, 255, 255, 0.1)',
                     color: '#fff',
                     borderRadius: '0.5rem',
-                    fontSize: '1rem',
+                    fontSize: '0.75rem',
                     fontWeight: '600',
                     cursor: 'pointer',
                     transition: 'all 0.3s ease',
@@ -725,16 +719,16 @@ const Landing: React.FC = () => {
             style={{
               position: 'absolute',
               left: '5%',
-              width: '25%',
+              width: '18.75%',
               height: 'auto',
-              maxWidth: '200px',
+              maxWidth: '150px',
               zIndex: 5,
               opacity: 0
             }}
           />
-          <div style={{ textAlign: 'right', maxWidth: '600px' }}>
-            <h2 style={{ fontSize: '3rem', marginBottom: '1rem', color: '#fff' }}>Archive Conversions</h2>
-            <p style={{ fontSize: '1.25rem', marginBottom: '2rem', color: '#e9e9ef' }}>
+          <div style={{ textAlign: 'right', maxWidth: '500px' }}>
+            <h2 style={{ fontSize: '2.25rem', marginBottom: '1rem', color: '#fff' }}>Archive Conversions</h2>
+            <p style={{ fontSize: '0.9375rem', marginBottom: '2rem', color: '#e9e9ef' }}>
               Compress and convert archives with ease. Support for all major compression formats.
             </p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', justifyContent: 'flex-end', marginBottom: '2rem' }}>
@@ -743,11 +737,11 @@ const Landing: React.FC = () => {
                   key={format}
                   className="format-btn"
                   style={{
-                    padding: '0.75rem 1.5rem',
+                    padding: '0.5625rem 1.125rem',
                     backgroundColor: 'rgba(255, 255, 255, 0.1)',
                     color: '#fff',
                     borderRadius: '0.5rem',
-                    fontSize: '1rem',
+                    fontSize: '0.75rem',
                     fontWeight: '600',
                     cursor: 'pointer',
                     transition: 'all 0.3s ease',
@@ -776,7 +770,6 @@ const Landing: React.FC = () => {
       <footer className="footer" style={{ 
         position: 'relative',
         minHeight: '10vh',
-        backgroundColor: '#161b27',
         padding: '3rem 5%'
       }}>
         <div className="footer-content" style={{
@@ -789,10 +782,10 @@ const Landing: React.FC = () => {
           height: '100%',
           gap: '1rem'
         }}>
-          <p style={{ color: '#e9e9ef', fontSize: 'clamp(0.9rem, 3vw, 1.5rem)' }}>&copy; Qoal it iz. Made with GSAP n Threejs '0.0'</p>
+          <p style={{ color: '#cae2e2', fontSize: 'clamp(0.675rem, 2.25vw, 1.125rem)', textAlign: 'center' }}>&copy; Qoal it iz.<br></br> Made with Gsap n Threejs |0_0|</p>
           <div className="footer-links" style={{ display: 'flex', gap: '2rem' }}>
-            <a href="https://www.github.com/F4tal1t/Qoal" style={{ color: '#ffb947', textDecoration: 'none', fontSize: 'clamp(0.85rem, 2.5vw, 1rem)' }}>Github</a>
-            <a href="https://www.dibby.me" style={{ color: '#ffb947', textDecoration: 'none', fontSize: 'clamp(0.85rem, 2.5vw, 1rem)' }}>Creator's Portfolio</a>
+            <a href="https://www.github.com/F4tal1t/Qoal" style={{ color: '#ffb947', textDecoration: 'none', fontSize: 'clamp(0.6375rem, 1.875vw, 0.75rem)' }}>Github</a>
+            <a href="https://www.dibby.me" style={{ color: '#ffb947', textDecoration: 'none', fontSize: 'clamp(0.6375rem, 1.875vw, 0.75rem)' }}>Creator's Portfolio</a>
           </div>
         </div>
       </footer>

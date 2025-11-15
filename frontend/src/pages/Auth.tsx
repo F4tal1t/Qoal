@@ -51,7 +51,7 @@ const Auth: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center relative">
+    <div className="min-h-screen flex items-center justify-center relative p-4">
       <div className="halftone-bg fixed inset-0 z-0">
         <div className="halftone-noise" />
         <div className="absolute inset-0 opacity-25 mix-blend-overlay" style={{
@@ -61,18 +61,19 @@ const Auth: React.FC = () => {
         }} />
       </div>
       
-      <div className="relative z-10 w-full max-w-md mx-4 p-8 rounded-lg" style={{
+      <div className="relative z-10 w-full max-w-md rounded-lg" style={{
         background: 'rgba(255, 255, 255, 0.05)',
         border: '1px solid rgba(255, 255, 255, 0.1)',
-        backdropFilter: 'blur(10px)'
+        backdropFilter: 'blur(10px)',
+        padding: 'clamp(1rem, 4vw, 2rem)'
       }}>
-        <div className="flex justify-center mb-8">
-          <img src="/Qoalation.png" alt="Qoal" style={{ height: '48px' }} />
+        <div className="flex justify-center" style={{ marginBottom: 'clamp(1rem, 4vw, 2rem)' }}>
+          <img src="/Qoalation.png" alt="Qoal" style={{ height: 'clamp(32px, 8vw, 48px)' }} />
         </div>
         
         <Tabs defaultValue="login">
           <TabsHighlight>
-            <TabsList style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginBottom: '2rem' }}>
+            <TabsList style={{ display: 'flex', justifyContent: 'center', gap: 'clamp(0.5rem, 2vw, 1rem)', marginBottom: 'clamp(1rem, 3vw, 2rem)' }}>
               <TabsHighlightItem value="login">
                 <TabsTrigger value="login" >Login</TabsTrigger>
               </TabsHighlightItem>
@@ -84,9 +85,9 @@ const Auth: React.FC = () => {
           
           <TabsContents>
             <TabsContent value="login">
-              <form onSubmit={handleLogin} className="space-y-4 mt-6">
+              <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(0.75rem, 2vw, 1rem)', marginTop: 'clamp(1rem, 3vw, 1.5rem)' }}>
                 <div>
-                  <label className="flex items-center gap-2 text-sm mb-2" style={{ color: 'var(--color-text)' }}>
+                  <label className="flex items-center gap-2 mb-2" style={{ color: 'var(--color-text)', fontSize: 'clamp(0.75rem, 2vw, 0.875rem)' }}>
                     <UserRound size={18} animateOnHover />
                     Email
                   </label>
@@ -95,17 +96,19 @@ const Auth: React.FC = () => {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    className="w-full px-4 py-2 rounded-md border"
+                    className="w-full rounded-md border"
                     style={{
                       background: 'rgba(255, 255, 255, 0.05)',
                       border: '1px solid rgba(255, 255, 255, 0.1)',
-                      color: 'var(--color-text)'
+                      color: 'var(--color-text)',
+                      padding: 'clamp(0.5rem, 2vw, 0.75rem) clamp(0.75rem, 3vw, 1rem)',
+                      fontSize: 'clamp(0.875rem, 2vw, 1rem)'
                     }}
                   />
                 </div>
                 
                 <div>
-                  <label className="flex items-center gap-2 text-sm mb-2" style={{ color: 'var(--color-text)' }}>
+                  <label className="flex items-center gap-2 mb-2" style={{ color: 'var(--color-text)', fontSize: 'clamp(0.75rem, 2vw, 0.875rem)' }}>
                     <LockKeyhole size={18} animateOnHover />
                     Password
                   </label>
@@ -114,23 +117,30 @@ const Auth: React.FC = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
-                    className="w-full px-4 py-2 rounded-md border"
+                    className="w-full rounded-md border"
                     style={{
                       background: 'rgba(255, 255, 255, 0.05)',
                       border: '1px solid rgba(255, 255, 255, 0.1)',
-                      color: 'var(--color-text)'
+                      color: 'var(--color-text)',
+                      padding: 'clamp(0.5rem, 2vw, 0.75rem) clamp(0.75rem, 3vw, 1rem)',
+                      fontSize: 'clamp(0.875rem, 2vw, 1rem)'
                     }}
                   />
                 </div>
                 
-                {error && <div className="text-red-500 text-sm">{error}</div>}
-                {success && <div className="text-green-500 text-sm">{success}</div>}
+                {error && <div className="text-red-500" style={{ fontSize: 'clamp(0.75rem, 2vw, 0.875rem)' }}>{error}</div>}
+                {success && <div className="text-green-500" style={{ fontSize: 'clamp(0.75rem, 2vw, 0.875rem)' }}>{success}</div>}
                 
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full py-3 rounded-md font-medium transition-colors bg-[#ffb947] text-[#161B27] mt-4"
-                  style={{ opacity: loading ? 0.7 : 1 }}
+                  className="w-full rounded-md font-medium transition-colors bg-[#ffb947] text-[#161B27]"
+                  style={{ 
+                    opacity: loading ? 0.7 : 1,
+                    padding: 'clamp(0.75rem, 3vw, 1rem)',
+                    fontSize: 'clamp(0.875rem, 2vw, 1rem)',
+                    marginTop: 'clamp(0.5rem, 2vw, 1rem)'
+                  }}
                 >
                   {loading ? 'Processing...' : 'Login'}
                 </button>
@@ -138,9 +148,9 @@ const Auth: React.FC = () => {
             </TabsContent>
             
             <TabsContent value="register">
-              <form onSubmit={handleRegister} className="space-y-4 mt-6">
+              <form onSubmit={handleRegister} style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(0.75rem, 2vw, 1rem)', marginTop: 'clamp(1rem, 3vw, 1.5rem)' }}>
                 <div>
-                  <label className="flex items-center gap-2 text-sm mb-2" style={{ color: 'var(--color-text)' }}>
+                  <label className="flex items-center gap-2 mb-2" style={{ color: 'var(--color-text)', fontSize: 'clamp(0.75rem, 2vw, 0.875rem)' }}>
                     <UserRound size={18} animateOnHover />
                     Name
                   </label>
@@ -149,17 +159,19 @@ const Auth: React.FC = () => {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     required
-                    className="w-full px-4 py-2 rounded-md border"
+                    className="w-full rounded-md border"
                     style={{
                       background: 'rgba(255, 255, 255, 0.05)',
                       border: '1px solid rgba(255, 255, 255, 0.1)',
-                      color: 'var(--color-text)'
+                      color: 'var(--color-text)',
+                      padding: 'clamp(0.5rem, 2vw, 0.75rem) clamp(0.75rem, 3vw, 1rem)',
+                      fontSize: 'clamp(0.875rem, 2vw, 1rem)'
                     }}
                   />
                 </div>
                 
                 <div>
-                  <label className="flex items-center gap-2 text-sm mb-2" style={{ color: 'var(--color-text)' }}>
+                  <label className="flex items-center gap-2 mb-2" style={{ color: 'var(--color-text)', fontSize: 'clamp(0.75rem, 2vw, 0.875rem)' }}>
                     <UserRound size={18} animateOnHover />
                     Email
                   </label>
@@ -168,17 +180,19 @@ const Auth: React.FC = () => {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    className="w-full px-4 py-2 rounded-md border"
+                    className="w-full rounded-md border"
                     style={{
                       background: 'rgba(255, 255, 255, 0.05)',
                       border: '1px solid rgba(255, 255, 255, 0.1)',
-                      color: 'var(--color-text)'
+                      color: 'var(--color-text)',
+                      padding: 'clamp(0.5rem, 2vw, 0.75rem) clamp(0.75rem, 3vw, 1rem)',
+                      fontSize: 'clamp(0.875rem, 2vw, 1rem)'
                     }}
                   />
                 </div>
                 
                 <div>
-                  <label className="flex items-center gap-2 text-sm mb-2" style={{ color: 'var(--color-text)' }}>
+                  <label className="flex items-center gap-2 mb-2" style={{ color: 'var(--color-text)', fontSize: 'clamp(0.75rem, 2vw, 0.875rem)' }}>
                     <LockKeyhole size={18} animateOnHover />
                     Password
                   </label>
@@ -187,23 +201,30 @@ const Auth: React.FC = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
-                    className="w-full px-4 py-2 rounded-md border"
+                    className="w-full rounded-md border"
                     style={{
                       background: 'rgba(255, 255, 255, 0.05)',
                       border: '1px solid rgba(255, 255, 255, 0.1)',
-                      color: 'var(--color-text)'
+                      color: 'var(--color-text)',
+                      padding: 'clamp(0.5rem, 2vw, 0.75rem) clamp(0.75rem, 3vw, 1rem)',
+                      fontSize: 'clamp(0.875rem, 2vw, 1rem)'
                     }}
                   />
                 </div>
                 
-                {error && <div className="text-red-500 text-sm">{error}</div>}
-                {success && <div className="text-green-500 text-sm">{success}</div>}
+                {error && <div className="text-red-500" style={{ fontSize: 'clamp(0.75rem, 2vw, 0.875rem)' }}>{error}</div>}
+                {success && <div className="text-green-500" style={{ fontSize: 'clamp(0.75rem, 2vw, 0.875rem)' }}>{success}</div>}
                 
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full py-3 rounded-md font-medium transition-colors bg-[#ffb947] text-[#161B27] mt-4"
-                  style={{ opacity: loading ? 0.7 : 1 }}
+                  className="w-full rounded-md font-medium transition-colors bg-[#ffb947] text-[#161B27]"
+                  style={{ 
+                    opacity: loading ? 0.7 : 1,
+                    padding: 'clamp(0.75rem, 3vw, 1rem)',
+                    fontSize: 'clamp(0.875rem, 2vw, 1rem)',
+                    marginTop: 'clamp(0.5rem, 2vw, 1rem)'
+                  }}
                 >
                   {loading ? 'Processing...' : 'Register'}
                 </button>

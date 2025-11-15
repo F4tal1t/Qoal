@@ -26,8 +26,8 @@
   --color-bg: #242424;
 
   /* Font Families */
-  --font-display: 'Poppins', sans-serif;
-  --font-text: 'Tiny-Regular', sans-serif;
+  --font-display: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-text: 'Tiny-Regular', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 @layer utilities {
@@ -59,9 +59,9 @@
   }
 
   .get-started-btn:hover {
-    background-color: var(--color-primary-hover) !important;
+    background-color: #faab2c;
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(255, 222, 90, 0.4) !important;
+    box-shadow: 0 6px 20px rgba(255, 222, 90, 0.4);
   }
 
   .get-started-btn:active {
@@ -344,6 +344,13 @@
   --sidebar-accent-foreground: oklch(0.21 0.006 285.885);
   --sidebar-border: oklch(0.92 0.004 286.32);
   --sidebar-ring: oklch(0.705 0.015 286.067);
+}
+
+html {
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+  -moz-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 html, body {

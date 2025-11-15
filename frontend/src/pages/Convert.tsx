@@ -284,7 +284,8 @@ const Convert: React.FC = () => {
       <div className="relative z-10 w-full max-w-4xl mx-auto p-8 rounded-lg" style={{
         background: 'rgba(255, 255, 255, 0.05)',
         border: '1px solid rgba(255, 255, 255, 0.1)',
-        backdropFilter: 'blur(10px)'
+        backdropFilter: 'blur(10px)',
+        transform: 'scale(0.8)'
       }}>
         <div className="mb-6">
           <h2 className="text-xl font-display" style={{ color: 'var(--color-text)' }}>Welcome, {userName}!</h2>

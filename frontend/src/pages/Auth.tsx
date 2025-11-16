@@ -24,7 +24,9 @@ const Auth: React.FC = () => {
       localStorage.setItem('token', response.token);
       localStorage.setItem('user', JSON.stringify(response.user));
       setSuccess('Login successful! Redirecting...');
-      setTimeout(() => navigate('/convert'), 1500);
+      setTimeout(() => {
+        window.location.href = '/convert';
+      }, 1500);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed');
     } finally {
@@ -42,7 +44,9 @@ const Auth: React.FC = () => {
       localStorage.setItem('token', response.token);
       localStorage.setItem('user', JSON.stringify(response.user));
       setSuccess('Registration successful! Redirecting...');
-      setTimeout(() => navigate('/convert'), 1500);
+      setTimeout(() => {
+        window.location.href = '/convert';
+      }, 1500);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Registration failed');
     } finally {

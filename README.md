@@ -1,6 +1,8 @@
-# Qoal - Universal File Converter
+<img width="1584" height="396" alt="Dibby (2)" src="https://github.com/user-attachments/assets/f7194852-be7e-444e-a36e-e8b8fc1b84c7" />
+<br></br>
 
-A full-stack web application for converting files between multiple formats including images, videos, audio, documents, and archives.
+### A full-stack web application for converting files between multiple formats including images, videos, audio, documents, and archives
+
 
 ## Live Demo
 
@@ -10,7 +12,7 @@ A full-stack web application for converting files between multiple formats inclu
 ## Features
 
 - User authentication with JWT tokens
-- Support for 50+ file formats across 5 categories
+- Support for 20+ file formats across 5 categories
 - Real-time conversion status tracking
 - Cloud storage integration with AWS S3
 - Responsive design with modern UI

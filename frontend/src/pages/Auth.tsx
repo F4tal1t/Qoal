@@ -55,40 +55,41 @@ const Auth: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center relative p-4">
-      <div className="halftone-bg fixed inset-0 z-0">
-        <div className="halftone-noise" />
-        <div className="absolute inset-0 opacity-25 mix-blend-overlay" style={{
-          backgroundImage: 'url(/BayerDithering.png)',
-          backgroundRepeat: 'repeat',
-          backgroundSize: '20px 20px'
-        }} />
+    <div className="min-h-screen relative">
+      <div className="fixed top-0 left-0 right-0 z-20 text-center py-3 px-4" style={{
+        background: 'rgba(255, 185, 71, 0.95)',
+        color: '#161B27',
+        fontSize: 'clamp(0.75rem, 2vw, 0.875rem)',
+        fontWeight: '500'
+      }}>
+        <p>Backend currently unavailable due to expired Render Database free access (Dec 14, 2025) :/</p>
+        <br />
+        <p style={{ fontSize: 'clamp(0.75rem, 2vw, 0.875rem)', margin: 0 }}>
+          Heres the Github Link of this Project : <a href="https://github.com/F4tal1t/Qoal" target="_blank" rel="noopener noreferrer" style={{ color: '#161B27' }}>Link</a>
+        </p>
       </div>
       
-      <div className="relative z-10 w-full max-w-md rounded-lg" style={{
-        background: 'rgba(255, 255, 255, 0.05)',
-        border: '1px solid rgba(255, 255, 255, 0.1)',
-        backdropFilter: 'blur(10px)',
-        padding: 'clamp(1rem, 4vw, 2rem)'
-      }}>
-        <div className="flex justify-center" style={{ marginBottom: 'clamp(1rem, 4vw, 2rem)' }}>
-          <img src="/Qoalation.png" alt="Qoal" style={{ height: 'clamp(32px, 8vw, 48px)' }} />
+      <div className="min-h-screen flex items-center justify-center relative p-4" style={{ paddingTop: '4rem' }}>
+        <div className="halftone-bg fixed inset-0 z-0">
+          <div className="halftone-noise" />
+          <div className="absolute inset-0 opacity-25 mix-blend-overlay" style={{
+            backgroundImage: 'url(/BayerDithering.png)',
+            backgroundRepeat: 'repeat',
+            backgroundSize: '20px 20px'
+          }} />
         </div>
         
-        <div className="text-center mb-4 p-3 rounded-md" style={{
-          background: 'rgba(255, 185, 71, 0.1)',
-          border: '1px solid rgba(255, 185, 71, 0.3)',
-          color: '#ffb947'
+        <div className="relative z-10 w-full max-w-md rounded-lg" style={{
+          background: 'rgba(255, 255, 255, 0.05)',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          backdropFilter: 'blur(10px)',
+          padding: 'clamp(1rem, 4vw, 2rem)'
         }}>
-          <p style={{ fontSize: 'clamp(0.75rem, 2vw, 0.875rem)', margin: 0 }}>
-            Backend currently unavailable due to expired Render Database free access (Dec 14, 2024) :/
-          </p>
-          <p style={{ fontSize: 'clamp(0.75rem, 2vw, 0.875rem)', margin: 0 }}>
-            Heres the Github Link of this Project : <a href="https://github.com/F4tal1t/Qoal" target="_blank" rel="noopener noreferrer" style={{ color: '#ffb947' }}>Link</a>
-          </p>
-        </div>
-        
-        <Tabs defaultValue="login">
+          <div className="flex justify-center" style={{ marginBottom: 'clamp(1rem, 4vw, 2rem)' }}>
+            <img src="/Qoalation.png" alt="Qoal" style={{ height: 'clamp(32px, 8vw, 48px)' }} />
+          </div>
+          
+          <Tabs defaultValue="login">
           <TabsHighlight>
             <TabsList style={{ display: 'flex', justifyContent: 'center', gap: 'clamp(0.5rem, 2vw, 1rem)', marginBottom: 'clamp(1rem, 3vw, 2rem)' }}>
               <TabsHighlightItem value="login">

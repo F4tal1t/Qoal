@@ -283,7 +283,7 @@ const Landing: React.FC = () => {
         fontSize: 'clamp(0.75rem, 2vw, 0.875rem)',
         fontWeight: '500'
       }}>
-        ⚠️ Backend currently unavailable due to expired Render Database free access (Dec 14, 2024)
+        Backend currently unavailable due to expired Render Database free access (Dec 14, 2025) (<a href="https://github.com/F4tal1t/Qoal" target="_blank" rel="noopener noreferrer" style={{ color: '#161B27' }}>Project Link</a>)
       </div>
       
       <div className="min-h-screen" style={{ overflow: 'auto', scrollbarWidth: 'none', msOverflowStyle: 'none', paddingTop: '4rem' }}>

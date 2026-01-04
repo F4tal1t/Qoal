@@ -276,7 +276,17 @@ const Landing: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen" style={{ overflow: 'auto', scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+    <div className="min-h-screen relative">
+      <div className="fixed top-0 left-0 right-0 z-20 text-center py-3 px-4" style={{
+        background: 'rgba(255, 185, 71, 0.95)',
+        color: '#161B27',
+        fontSize: 'clamp(0.75rem, 2vw, 0.875rem)',
+        fontWeight: '500'
+      }}>
+        ⚠️ Backend currently unavailable due to expired Render Database free access (Dec 14, 2024)
+      </div>
+      
+      <div className="min-h-screen" style={{ overflow: 'auto', scrollbarWidth: 'none', msOverflowStyle: 'none', paddingTop: '4rem' }}>
       <style>{`
         html, body, * {
           scrollbar-width: none;
@@ -785,10 +795,11 @@ const Landing: React.FC = () => {
           <p style={{ color: '#cae2e2', fontSize: 'clamp(0.675rem, 2.25vw, 1.125rem)', textAlign: 'center' }}>&copy; Qoal it iz.<br></br> Made with Gsap n Threejs |0_0|</p>
           <div className="footer-links" style={{ display: 'flex', gap: '2rem' }}>
             <a href="https://www.github.com/F4tal1t/Qoal" style={{ color: '#ffb947', textDecoration: 'none', fontSize: 'clamp(0.6375rem, 1.875vw, 0.75rem)' }}>Github</a>
-            <a href="https://www.dibby.me" style={{ color: '#ffb947', textDecoration: 'none', fontSize: 'clamp(0.6375rem, 1.875vw, 0.75rem)' }}>Creator's Portfolio</a>
+            <a href="https://dibby.me" style={{ color: '#ffb947', textDecoration: 'none', fontSize: 'clamp(0.6375rem, 1.875vw, 0.75rem)' }}>Creator's Portfolio</a>
           </div>
         </div>
       </footer>
+    </div>
     </div>
   );
 };

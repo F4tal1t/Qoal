@@ -271,7 +271,17 @@ const Convert: React.FC = () => {
   };
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center">
+    <div className="min-h-screen relative">
+      <div className="fixed top-0 left-0 right-0 z-20 text-center py-3 px-4" style={{
+        background: 'rgba(255, 185, 71, 0.95)',
+        color: '#161B27',
+        fontSize: 'clamp(0.75rem, 2vw, 0.875rem)',
+        fontWeight: '500'
+      }}>
+        ⚠️ Backend currently unavailable due to expired Render Database free access (Dec 14, 2024)
+      </div>
+      
+      <div className="fixed inset-0 flex items-center justify-center" style={{ paddingTop: '4rem' }}>
       <div className="halftone-bg fixed inset-0 z-0">
         <div className="halftone-noise" />
         <div className="absolute inset-0 opacity-25 mix-blend-overlay" style={{

@@ -86,166 +86,167 @@ const Auth: React.FC = () => {
           </div>
           
           <Tabs defaultValue="login">
-          <TabsHighlight>
-            <TabsList style={{ display: 'flex', justifyContent: 'center', gap: 'clamp(0.5rem, 2vw, 1rem)', marginBottom: 'clamp(1rem, 3vw, 2rem)' }}>
-              <TabsHighlightItem value="login">
-                <TabsTrigger value="login" >Login</TabsTrigger>
-              </TabsHighlightItem>
-              <TabsHighlightItem value="register">
-                <TabsTrigger value="register" >Register</TabsTrigger>
-              </TabsHighlightItem>
-            </TabsList>
-          </TabsHighlight>
-          
-          <TabsContents>
-            <TabsContent value="login">
-              <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(0.75rem, 2vw, 1rem)', marginTop: 'clamp(1rem, 3vw, 1.5rem)' }}>
-                <div>
-                  <label className="flex items-center gap-2 mb-2" style={{ color: 'var(--color-text)', fontSize: 'clamp(0.75rem, 2vw, 0.875rem)' }}>
-                    <UserRound size={18} animateOnHover />
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    className="w-full rounded-md border"
-                    style={{
-                      background: 'rgba(255, 255, 255, 0.05)',
-                      border: '1px solid rgba(255, 255, 255, 0.1)',
-                      color: 'var(--color-text)',
-                      padding: 'clamp(0.5rem, 2vw, 0.75rem) clamp(0.75rem, 3vw, 1rem)',
-                      fontSize: 'clamp(0.875rem, 2vw, 1rem)'
-                    }}
-                  />
-                </div>
-                
-                <div>
-                  <label className="flex items-center gap-2 mb-2" style={{ color: 'var(--color-text)', fontSize: 'clamp(0.75rem, 2vw, 0.875rem)' }}>
-                    <LockKeyhole size={18} animateOnHover />
-                    Password
-                  </label>
-                  <input
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    className="w-full rounded-md border"
-                    style={{
-                      background: 'rgba(255, 255, 255, 0.05)',
-                      border: '1px solid rgba(255, 255, 255, 0.1)',
-                      color: 'var(--color-text)',
-                      padding: 'clamp(0.5rem, 2vw, 0.75rem) clamp(0.75rem, 3vw, 1rem)',
-                      fontSize: 'clamp(0.875rem, 2vw, 1rem)'
-                    }}
-                  />
-                </div>
-                
-                {error && <div className="text-red-500" style={{ fontSize: 'clamp(0.75rem, 2vw, 0.875rem)' }}>{error}</div>}
-                {success && <div className="text-green-500" style={{ fontSize: 'clamp(0.75rem, 2vw, 0.875rem)' }}>{success}</div>}
-                
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full rounded-md font-medium transition-colors bg-[#ffb947] text-[#161B27]"
-                  style={{ 
-                    opacity: loading ? 0.7 : 1,
-                    padding: 'clamp(0.75rem, 3vw, 1rem)',
-                    fontSize: 'clamp(0.875rem, 2vw, 1rem)',
-                    marginTop: 'clamp(0.5rem, 2vw, 1rem)'
-                  }}
-                >
-                  {loading ? 'Processing...' : 'Login'}
-                </button>
-              </form>
-            </TabsContent>
+            <TabsHighlight>
+              <TabsList style={{ display: 'flex', justifyContent: 'center', gap: 'clamp(0.5rem, 2vw, 1rem)', marginBottom: 'clamp(1rem, 3vw, 2rem)' }}>
+                <TabsHighlightItem value="login">
+                  <TabsTrigger value="login" >Login</TabsTrigger>
+                </TabsHighlightItem>
+                <TabsHighlightItem value="register">
+                  <TabsTrigger value="register" >Register</TabsTrigger>
+                </TabsHighlightItem>
+              </TabsList>
+            </TabsHighlight>
             
-            <TabsContent value="register">
-              <form onSubmit={handleRegister} style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(0.75rem, 2vw, 1rem)', marginTop: 'clamp(1rem, 3vw, 1.5rem)' }}>
-                <div>
-                  <label className="flex items-center gap-2 mb-2" style={{ color: 'var(--color-text)', fontSize: 'clamp(0.75rem, 2vw, 0.875rem)' }}>
-                    <UserRound size={18} animateOnHover />
-                    Name
-                  </label>
-                  <input
-                    type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    required
-                    className="w-full rounded-md border"
-                    style={{
-                      background: 'rgba(255, 255, 255, 0.05)',
-                      border: '1px solid rgba(255, 255, 255, 0.1)',
-                      color: 'var(--color-text)',
-                      padding: 'clamp(0.5rem, 2vw, 0.75rem) clamp(0.75rem, 3vw, 1rem)',
-                      fontSize: 'clamp(0.875rem, 2vw, 1rem)'
+            <TabsContents>
+              <TabsContent value="login">
+                <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(0.75rem, 2vw, 1rem)', marginTop: 'clamp(1rem, 3vw, 1.5rem)' }}>
+                  <div>
+                    <label className="flex items-center gap-2 mb-2" style={{ color: 'var(--color-text)', fontSize: 'clamp(0.75rem, 2vw, 0.875rem)' }}>
+                      <UserRound size={18} animateOnHover />
+                      Email
+                    </label>
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                      className="w-full rounded-md border"
+                      style={{
+                        background: 'rgba(255, 255, 255, 0.05)',
+                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                        color: 'var(--color-text)',
+                        padding: 'clamp(0.5rem, 2vw, 0.75rem) clamp(0.75rem, 3vw, 1rem)',
+                        fontSize: 'clamp(0.875rem, 2vw, 1rem)'
+                      }}
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="flex items-center gap-2 mb-2" style={{ color: 'var(--color-text)', fontSize: 'clamp(0.75rem, 2vw, 0.875rem)' }}>
+                      <LockKeyhole size={18} animateOnHover />
+                      Password
+                    </label>
+                    <input
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      className="w-full rounded-md border"
+                      style={{
+                        background: 'rgba(255, 255, 255, 0.05)',
+                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                        color: 'var(--color-text)',
+                        padding: 'clamp(0.5rem, 2vw, 0.75rem) clamp(0.75rem, 3vw, 1rem)',
+                        fontSize: 'clamp(0.875rem, 2vw, 1rem)'
+                      }}
+                    />
+                  </div>
+                  
+                  {error && <div className="text-red-500" style={{ fontSize: 'clamp(0.75rem, 2vw, 0.875rem)' }}>{error}</div>}
+                  {success && <div className="text-green-500" style={{ fontSize: 'clamp(0.75rem, 2vw, 0.875rem)' }}>{success}</div>}
+                  
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full rounded-md font-medium transition-colors bg-[#ffb947] text-[#161B27]"
+                    style={{ 
+                      opacity: loading ? 0.7 : 1,
+                      padding: 'clamp(0.75rem, 3vw, 1rem)',
+                      fontSize: 'clamp(0.875rem, 2vw, 1rem)',
+                      marginTop: 'clamp(0.5rem, 2vw, 1rem)'
                     }}
-                  />
-                </div>
-                
-                <div>
-                  <label className="flex items-center gap-2 mb-2" style={{ color: 'var(--color-text)', fontSize: 'clamp(0.75rem, 2vw, 0.875rem)' }}>
-                    <UserRound size={18} animateOnHover />
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    className="w-full rounded-md border"
-                    style={{
-                      background: 'rgba(255, 255, 255, 0.05)',
-                      border: '1px solid rgba(255, 255, 255, 0.1)',
-                      color: 'var(--color-text)',
-                      padding: 'clamp(0.5rem, 2vw, 0.75rem) clamp(0.75rem, 3vw, 1rem)',
-                      fontSize: 'clamp(0.875rem, 2vw, 1rem)'
+                  >
+                    {loading ? 'Processing...' : 'Login'}
+                  </button>
+                </form>
+              </TabsContent>
+              
+              <TabsContent value="register">
+                <form onSubmit={handleRegister} style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(0.75rem, 2vw, 1rem)', marginTop: 'clamp(1rem, 3vw, 1.5rem)' }}>
+                  <div>
+                    <label className="flex items-center gap-2 mb-2" style={{ color: 'var(--color-text)', fontSize: 'clamp(0.75rem, 2vw, 0.875rem)' }}>
+                      <UserRound size={18} animateOnHover />
+                      Name
+                    </label>
+                    <input
+                      type="text"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      required
+                      className="w-full rounded-md border"
+                      style={{
+                        background: 'rgba(255, 255, 255, 0.05)',
+                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                        color: 'var(--color-text)',
+                        padding: 'clamp(0.5rem, 2vw, 0.75rem) clamp(0.75rem, 3vw, 1rem)',
+                        fontSize: 'clamp(0.875rem, 2vw, 1rem)'
+                      }}
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="flex items-center gap-2 mb-2" style={{ color: 'var(--color-text)', fontSize: 'clamp(0.75rem, 2vw, 0.875rem)' }}>
+                      <UserRound size={18} animateOnHover />
+                      Email
+                    </label>
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                      className="w-full rounded-md border"
+                      style={{
+                        background: 'rgba(255, 255, 255, 0.05)',
+                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                        color: 'var(--color-text)',
+                        padding: 'clamp(0.5rem, 2vw, 0.75rem) clamp(0.75rem, 3vw, 1rem)',
+                        fontSize: 'clamp(0.875rem, 2vw, 1rem)'
+                      }}
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="flex items-center gap-2 mb-2" style={{ color: 'var(--color-text)', fontSize: 'clamp(0.75rem, 2vw, 0.875rem)' }}>
+                      <LockKeyhole size={18} animateOnHover />
+                      Password
+                    </label>
+                    <input
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      className="w-full rounded-md border"
+                      style={{
+                        background: 'rgba(255, 255, 255, 0.05)',
+                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                        color: 'var(--color-text)',
+                        padding: 'clamp(0.5rem, 2vw, 0.75rem) clamp(0.75rem, 3vw, 1rem)',
+                        fontSize: 'clamp(0.875rem, 2vw, 1rem)'
+                      }}
+                    />
+                  </div>
+                  
+                  {error && <div className="text-red-500" style={{ fontSize: 'clamp(0.75rem, 2vw, 0.875rem)' }}>{error}</div>}
+                  {success && <div className="text-green-500" style={{ fontSize: 'clamp(0.75rem, 2vw, 0.875rem)' }}>{success}</div>}
+                  
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full rounded-md font-medium transition-colors bg-[#ffb947] text-[#161B27]"
+                    style={{ 
+                      opacity: loading ? 0.7 : 1,
+                      padding: 'clamp(0.75rem, 3vw, 1rem)',
+                      fontSize: 'clamp(0.875rem, 2vw, 1rem)',
+                      marginTop: 'clamp(0.5rem, 2vw, 1rem)'
                     }}
-                  />
-                </div>
-                
-                <div>
-                  <label className="flex items-center gap-2 mb-2" style={{ color: 'var(--color-text)', fontSize: 'clamp(0.75rem, 2vw, 0.875rem)' }}>
-                    <LockKeyhole size={18} animateOnHover />
-                    Password
-                  </label>
-                  <input
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    className="w-full rounded-md border"
-                    style={{
-                      background: 'rgba(255, 255, 255, 0.05)',
-                      border: '1px solid rgba(255, 255, 255, 0.1)',
-                      color: 'var(--color-text)',
-                      padding: 'clamp(0.5rem, 2vw, 0.75rem) clamp(0.75rem, 3vw, 1rem)',
-                      fontSize: 'clamp(0.875rem, 2vw, 1rem)'
-                    }}
-                  />
-                </div>
-                
-                {error && <div className="text-red-500" style={{ fontSize: 'clamp(0.75rem, 2vw, 0.875rem)' }}>{error}</div>}
-                {success && <div className="text-green-500" style={{ fontSize: 'clamp(0.75rem, 2vw, 0.875rem)' }}>{success}</div>}
-                
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full rounded-md font-medium transition-colors bg-[#ffb947] text-[#161B27]"
-                  style={{ 
-                    opacity: loading ? 0.7 : 1,
-                    padding: 'clamp(0.75rem, 3vw, 1rem)',
-                    fontSize: 'clamp(0.875rem, 2vw, 1rem)',
-                    marginTop: 'clamp(0.5rem, 2vw, 1rem)'
-                  }}
-                >
-                  {loading ? 'Processing...' : 'Register'}
-                </button>
-              </form>
-            </TabsContent>
-          </TabsContents>
-        </Tabs>
+                  >
+                    {loading ? 'Processing...' : 'Register'}
+                  </button>
+                </form>
+              </TabsContent>
+            </TabsContents>
+          </Tabs>
+        </div>
       </div>
     </div>
   );

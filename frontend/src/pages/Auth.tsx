@@ -62,11 +62,7 @@ const Auth: React.FC = () => {
         fontSize: 'clamp(0.75rem, 2vw, 0.875rem)',
         fontWeight: '500'
       }}>
-        <p>Backend currently unavailable due to expired Render Database free access (Dec 14, 2025) :/</p>
-        <br />
-        <p style={{ fontSize: 'clamp(0.75rem, 2vw, 0.875rem)', margin: 0 }}>
-          Heres the Github Link of this Project : <a href="https://github.com/F4tal1t/Qoal" target="_blank" rel="noopener noreferrer" style={{ color: '#161B27' }}>Link</a>
-        </p>
+        Backend currently unavailable due to expired Render Database free access (Dec 14, 2025) (<a href="https://github.com/F4tal1t/Qoal" target="_blank" rel="noopener noreferrer" style={{ color: '#161B27' }}> Project Link</a>)
       </div>
       
       <div className="min-h-screen flex items-center justify-center relative p-4" style={{ paddingTop: '4rem' }}>

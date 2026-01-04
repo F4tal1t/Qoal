@@ -75,6 +75,19 @@ const Auth: React.FC = () => {
           <img src="/Qoalation.png" alt="Qoal" style={{ height: 'clamp(32px, 8vw, 48px)' }} />
         </div>
         
+        <div className="text-center mb-4 p-3 rounded-md" style={{
+          background: 'rgba(255, 185, 71, 0.1)',
+          border: '1px solid rgba(255, 185, 71, 0.3)',
+          color: '#ffb947'
+        }}>
+          <p style={{ fontSize: 'clamp(0.75rem, 2vw, 0.875rem)', margin: 0 }}>
+            Backend currently unavailable due to expired Render Database free access (Dec 14, 2024) :/
+          </p>
+          <p style={{ fontSize: 'clamp(0.75rem, 2vw, 0.875rem)', margin: 0 }}>
+            Heres the Github Link of this Project : <a href="https://github.com/F4tal1t/Qoal" target="_blank" rel="noopener noreferrer" style={{ color: '#ffb947' }}>Link</a>
+          </p>
+        </div>
+        
         <Tabs defaultValue="login">
           <TabsHighlight>
             <TabsList style={{ display: 'flex', justifyContent: 'center', gap: 'clamp(0.5rem, 2vw, 1rem)', marginBottom: 'clamp(1rem, 3vw, 2rem)' }}>
